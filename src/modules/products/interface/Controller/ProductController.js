@@ -59,3 +59,41 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     message: "Product deleted",
   });
 });
+
+export const archiveProduct = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const productId = req.params.id;
+
+  const result = await productService.archiveProduct(productId, userId);
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Product archived",
+    data: result,
+  });
+});
+
+export const getArchivedProducts = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  const result = await productService.getArchivedProducts(userId);
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Archived products fetched",
+    data: result,
+  });
+});
+
+export const reactivateProduct = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const productId = req.params.id;
+
+  const result = await productService.reactivateProduct(productId, userId);
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Product reactivated",
+    data: result,
+  });
+});

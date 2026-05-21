@@ -47,7 +47,7 @@ export default class ProductRepo {
       SELECT *
       FROM product_master
       WHERE product_id = $1
-      AND user_id = $2
+      AND user_id = $2 AND is_active = true
       `,
       [productId, userId],
     );
@@ -84,6 +84,58 @@ export default class ProductRepo {
       AND user_id = $2
       RETURNING *
       `,
+      [productId, userId],
+    );
+
+    return result.rows[0];
+  }
+
+  async archiveProduct(productId, userId) {
+    const result = await db.query(
+      `
+    UPDATE product_master
+    SET is_active = false
+    WHERE product_id = $1
+      AND user_id = $2
+    RETURNING *
+    `,
+      [productId, userId],
+    );
+
+    return result.rows[0];
+  }
+
+  async findArchivedByUserId(userId) {
+    const result = await db.query(
+      `
+    SELECT
+      product_id,
+      user_id,
+      product_name,
+      product_price,
+      is_active,
+      created_at,
+      updated_at
+    FROM product_master
+    WHERE user_id = $1
+      AND is_active = false
+    ORDER BY updated_at DESC, created_at DESC
+    `,
+      [userId],
+    );
+
+    return result.rows;
+  }
+
+  async reactivateProduct(productId, userId) {
+    const result = await db.query(
+      `
+    UPDATE product_master
+    SET is_active = true
+    WHERE product_id = $1
+      AND user_id = $2
+    RETURNING *
+    `,
       [productId, userId],
     );
 

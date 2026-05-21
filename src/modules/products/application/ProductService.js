@@ -50,4 +50,28 @@ export default class ProductService {
 
     return await this.productRepo.deactivate(productId, userId);
   }
+
+  async archiveProduct(productId, userId) {
+    const product = await this.productRepo.archiveProduct(productId, userId);
+
+    if (!product) {
+      throw new AppError("Product not found", 404, "PRODUCT_NOT_FOUND");
+    }
+
+    return product;
+  }
+
+  async getArchivedProducts(userId) {
+    return await this.productRepo.findArchivedByUserId(userId);
+  }
+
+  async reactivateProduct(productId, userId) {
+    const product = await this.productRepo.reactivateProduct(productId, userId);
+
+    if (!product) {
+      throw new AppError("Product not found", 404, "PRODUCT_NOT_FOUND");
+    }
+
+    return product;
+  }
 }
