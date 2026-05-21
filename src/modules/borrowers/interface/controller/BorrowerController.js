@@ -74,3 +74,22 @@ export const uploadBorrowerProfileImage = asyncHandler(async (req, res) => {
     data: borrower,
   });
 });
+
+export const updatePublicAccess = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const borrowerId = req.params.id;
+
+  const { enabled } = req.body;
+
+  const result = await borrowerService.updatePublicAccess(
+    borrowerId,
+    enabled,
+    userId,
+  );
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Public access updated",
+    data: result,
+  });
+});

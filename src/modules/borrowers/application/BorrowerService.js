@@ -100,4 +100,12 @@ export default class BorrowerService {
 
     return borrower;
   }
+
+  async updatePublicAccess(borrowerId, enabled, userId) {
+    return await this.borrowerRepo.updatePublicAccess(
+      borrowerId,
+      enabled,
+      userId,
+    );
+  }
 }

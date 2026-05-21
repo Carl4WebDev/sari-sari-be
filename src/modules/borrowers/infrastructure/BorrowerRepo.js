@@ -28,12 +28,14 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
       `
     SELECT
       profile_image_url,
-      borrower_id,
+    borrower_id,
       first_name,
       middle_name,
       last_name,
       dob,
       contact_number,
+      public_token,
+      token_enabled,
       created_at
     FROM borrowers
     WHERE user_id = $1
@@ -43,6 +45,21 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     );
 
     return result.rows;
+  }
+
+  async updatePublicAccess(borrowerId, enabled, userId) {
+    const result = await db.query(
+      `
+    UPDATE borrowers
+    SET token_enabled = $1
+    WHERE borrower_id = $2
+      AND user_id = $3
+    RETURNING *
+    `,
+      [enabled, borrowerId, userId],
+    );
+
+    return result.rows[0];
   }
 
   async getTotalLoanByBorrowerIds(borrowerIds) {

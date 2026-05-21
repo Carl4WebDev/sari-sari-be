@@ -11,6 +11,8 @@ import paymentRoutes from "./modules/payments/interface/paymentRoutes.js";
 
 import productRoutes from "./modules/products/interface/productRoutes.js";
 
+import publicStatusRoutes from "./modules/public_status/interface/publicStatusRoutes.js";
+
 dotenv.config();
 
 const app = express();
@@ -34,5 +36,6 @@ app.use("/api/borrowers", borrowerRoutes);
 app.use("/api/loans", loanRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/public", publicStatusRoutes);
 
 app.use(errorHandler);
