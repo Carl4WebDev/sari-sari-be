@@ -27,6 +27,7 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     const result = await db.query(
       `
     SELECT
+      profile_image_url,
       borrower_id,
       first_name,
       middle_name,
@@ -135,5 +136,20 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     );
 
     return Number(result.rows[0].balance);
+  }
+
+  async updateBorrowerProfileImage(borrowerId, userId, imageUrl) {
+    const result = await db.query(
+      `
+    UPDATE borrowers
+    SET profile_image_url = $1
+    WHERE borrower_id = $2
+    AND user_id = $3
+    RETURNING *
+    `,
+      [imageUrl, borrowerId, userId],
+    );
+
+    return result.rows[0];
   }
 }

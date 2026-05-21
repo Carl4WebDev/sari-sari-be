@@ -74,4 +74,30 @@ export default class BorrowerService {
       items: itemsMap.get(t.transaction_id) || [],
     }));
   }
+
+  async uploadBorrowerProfileImage(borrowerId, userId, imageUrl) {
+    if (!borrowerId) {
+      throw new Error("Borrower ID is required");
+    }
+
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    if (!imageUrl) {
+      throw new Error("Profile image is required");
+    }
+
+    const borrower = await this.borrowerRepo.updateBorrowerProfileImage(
+      borrowerId,
+      userId,
+      imageUrl,
+    );
+
+    if (!borrower) {
+      throw new Error("Borrower not found");
+    }
+
+    return borrower;
+  }
 }

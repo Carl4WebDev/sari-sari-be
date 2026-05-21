@@ -26,6 +26,8 @@ app.use(
 
 app.use(express.json());
 
+app.use("/uploads", express.static("uploads"));
+
 app.use(healthRoute);
 app.use("/api/users", userRoutes);
 app.use("/api/borrowers", borrowerRoutes);

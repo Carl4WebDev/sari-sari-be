@@ -49,3 +49,28 @@ export const getBorrowerTransactions = asyncHandler(async (req, res) => {
     data: transactions,
   });
 });
+
+export const uploadBorrowerProfileImage = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const borrowerId = req.params.borrowerId;
+
+  if (!req.file) {
+    throw new Error("Profile image is required");
+  }
+
+  const baseUrl = process.env.APP_URL;
+
+  const imageUrl = `${baseUrl}/uploads/borrowers/${req.file.filename}`;
+
+  const borrower = await borrowerService.uploadBorrowerProfileImage(
+    borrowerId,
+    userId,
+    imageUrl,
+  );
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Borrower profile image uploaded successfully",
+    data: borrower,
+  });
+});
