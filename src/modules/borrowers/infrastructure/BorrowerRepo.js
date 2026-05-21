@@ -50,10 +50,17 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
       `
     SELECT
       borrower_id,
-      COALESCE(SUM(total_amount),0) AS total_loan
+      COALESCE(
+        SUM(
+          CASE
+            WHEN type = 'LOAN' THEN total_amount
+            WHEN type = 'PAYMENT' THEN -total_amount
+            ELSE 0
+          END
+        ),
+      0) AS total_loan
     FROM transactions
     WHERE borrower_id = ANY($1)
-      AND type = 'LOAN'
     GROUP BY borrower_id
     `,
       [borrowerIds],
@@ -69,10 +76,11 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
       transaction_id,
       type,
       transaction_date,
-      total_amount
+      total_amount,
+      created_at
     FROM transactions
     WHERE borrower_id = $1
-    ORDER BY transaction_date DESC
+    ORDER BY created_at DESC, transaction_id DESC
     `,
       [borrowerId],
     );

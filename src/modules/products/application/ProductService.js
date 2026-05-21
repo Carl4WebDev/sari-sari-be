@@ -6,13 +6,19 @@ export default class ProductService {
   }
 
   async createProduct(data, userId) {
-    const product = new Product({
+    if (!data.product_name) {
+      throw new Error("Product name is required");
+    }
+
+    if (!data.product_price) {
+      throw new Error("Product price is required");
+    }
+
+    return await this.productRepo.create({
       user_id: userId,
       product_name: data.product_name,
-      product_price: data.product_price,
+      product_price: Number(data.product_price),
     });
-
-    return await this.productRepo.create(product);
   }
 
   async getProducts(userId) {
