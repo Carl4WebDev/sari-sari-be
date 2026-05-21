@@ -115,4 +115,28 @@ export default class BorrowerService {
       userId,
     );
   }
+  async archiveBorrower(borrowerId, userId) {
+    const borrower = await this.borrowerRepo.archiveBorrower(
+      borrowerId,
+      userId,
+    );
+
+    if (!borrower) {
+      throw new AppError(
+        "Cannot archive borrower with unpaid balance",
+        400,
+        "BORROWER_HAS_BALANCE",
+      );
+    }
+
+    return borrower;
+  }
+
+  async getArchivedBorrowers(userId) {
+    return await this.borrowerRepo.findArchivedByUserId(userId);
+  }
+
+  async reactivateBorrower(borrowerId, userId) {
+    return await this.borrowerRepo.reactivateBorrower(borrowerId, userId);
+  }
 }

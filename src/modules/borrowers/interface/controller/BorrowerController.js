@@ -93,6 +93,19 @@ export const uploadBorrowerProfileImage = asyncHandler(async (req, res) => {
 //   });
 // });
 
+export const archiveBorrower = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const borrowerId = req.params.id;
+
+  const result = await borrowerService.archiveBorrower(borrowerId, userId);
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Borrower archived",
+    data: result,
+  });
+});
+
 export const updatePublicLoanAccess = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const borrowerId = req.params.id;
@@ -108,6 +121,31 @@ export const updatePublicLoanAccess = asyncHandler(async (req, res) => {
   return sendSuccess(res, {
     statusCode: 200,
     message: "Public loan access updated",
+    data: result,
+  });
+});
+
+export const getArchivedBorrowers = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  const result = await borrowerService.getArchivedBorrowers(userId);
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Archived borrowers fetched",
+    data: result,
+  });
+});
+
+export const reactivateBorrower = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const borrowerId = req.params.id;
+
+  const result = await borrowerService.reactivateBorrower(borrowerId, userId);
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Borrower reactivated",
     data: result,
   });
 });

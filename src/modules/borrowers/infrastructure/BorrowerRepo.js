@@ -24,28 +24,138 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     return result.rows[0];
   }
 
-  async findAllByUserId(userId) {
+  async archiveBorrower(borrowerId, userId) {
+    const result = await db.query(
+      `
+    WITH balance_check AS (
+      SELECT
+        b.borrower_id,
+        COALESCE(SUM(
+          CASE
+            WHEN t.type = 'LOAN' THEN t.total_amount
+            WHEN t.type = 'PAYMENT' THEN -t.total_amount
+            ELSE 0
+          END
+        ), 0) AS balance
+      FROM borrowers b
+      LEFT JOIN transactions t
+        ON t.borrower_id = b.borrower_id
+      WHERE b.borrower_id = $1
+        AND b.user_id = $2
+      GROUP BY b.borrower_id
+    )
+    UPDATE borrowers b
+    SET is_active = false
+    FROM balance_check bc
+    WHERE b.borrower_id = bc.borrower_id
+      AND bc.balance <= 0
+    RETURNING b.*
+    `,
+      [borrowerId, userId],
+    );
+
+    return result.rows[0];
+  }
+  async findArchivedByUserId(userId) {
     const result = await db.query(
       `
     SELECT
-      profile_image_url,
-    borrower_id,
-      first_name,
-      middle_name,
-      last_name,
-      dob,
-      contact_number,
-      public_token,
-      token_enabled,
-      created_at
-    FROM borrowers
-    WHERE user_id = $1
-    ORDER BY created_at DESC
+      b.profile_image_url,
+      b.borrower_id,
+      b.first_name,
+      b.middle_name,
+      b.last_name,
+      b.dob,
+      b.contact_number,
+      b.public_token,
+      b.token_enabled,
+      b.is_active,
+      b.created_at,
+
+      COALESCE(SUM(
+        CASE
+          WHEN t.type = 'LOAN' THEN t.total_amount
+          WHEN t.type = 'PAYMENT' THEN -t.total_amount
+          ELSE 0
+        END
+      ), 0) AS balance
+
+    FROM borrowers b
+    LEFT JOIN transactions t
+      ON t.borrower_id = b.borrower_id
+
+    WHERE b.user_id = $1
+      AND b.is_active = false
+
+    GROUP BY b.borrower_id
+
+    ORDER BY b.created_at DESC
     `,
       [userId],
     );
 
-    return result.rows;
+    return result.rows.map((row) => ({
+      ...row,
+      balance: Number(row.balance),
+    }));
+  }
+  async reactivateBorrower(borrowerId, userId) {
+    const result = await db.query(
+      `
+    UPDATE borrowers
+    SET is_active = true
+    WHERE borrower_id = $1
+      AND user_id = $2
+    RETURNING *
+    `,
+      [borrowerId, userId],
+    );
+
+    return result.rows[0];
+  }
+
+  async findAllByUserId(userId) {
+    const result = await db.query(
+      `
+    SELECT
+      b.profile_image_url,
+      b.borrower_id,
+      b.first_name,
+      b.middle_name,
+      b.last_name,
+      b.dob,
+      b.contact_number,
+      b.public_token,
+      b.token_enabled,
+      b.is_active,
+      b.created_at,
+
+      COALESCE(SUM(
+        CASE
+          WHEN t.type = 'LOAN' THEN t.total_amount
+          WHEN t.type = 'PAYMENT' THEN -t.total_amount
+          ELSE 0
+        END
+      ), 0) AS balance
+
+    FROM borrowers b
+    LEFT JOIN transactions t
+      ON t.borrower_id = b.borrower_id
+
+WHERE b.user_id = $1
+  AND b.is_active = true
+
+    GROUP BY b.borrower_id
+
+    ORDER BY b.created_at DESC
+    `,
+      [userId],
+    );
+
+    return result.rows.map((row) => ({
+      ...row,
+      balance: Number(row.balance),
+    }));
   }
 
   // async updatePublicAccess(borrowerId, enabled, userId) {
