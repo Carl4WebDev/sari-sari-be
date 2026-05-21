@@ -49,7 +49,7 @@ export default class PublicStatusRepo {
         t.type,
         t.transaction_date,
         t.total_amount
-      ORDER BY t.transaction_date ASC, t.transaction_id ASC
+      ORDER BY t.transaction_date DESC, t.transaction_id DESC
       `,
       [borrowerId],
     );

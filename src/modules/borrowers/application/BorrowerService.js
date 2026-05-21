@@ -101,8 +101,15 @@ export default class BorrowerService {
     return borrower;
   }
 
-  async updatePublicAccess(borrowerId, enabled, userId) {
-    return await this.borrowerRepo.updatePublicAccess(
+  // async updatePublicAccess(borrowerId, enabled, userId) {
+  //   return await this.borrowerRepo.updatePublicAccess(
+  //     borrowerId,
+  //     enabled,
+  //     userId,
+  //   );
+  // }
+  async updatePublicLoanAccess(borrowerId, enabled, userId) {
+    return await this.borrowerRepo.updatePublicLoanAccess(
       borrowerId,
       enabled,
       userId,

@@ -4,7 +4,8 @@ import {
   getBorrowers,
   getBorrowerTransactions,
   uploadBorrowerProfileImage,
-  updatePublicAccess,
+  // updatePublicAccess,
+  updatePublicLoanAccess,
 } from "./Controller/BorrowerController.js";
 
 import authMiddleware from "../../../core/middleware/Auth.js";
@@ -32,10 +33,17 @@ router.patch(
   uploadBorrowerProfileImage,
 );
 
+// router.patch(
+//   "/:id/public-access",
+//   authMiddleware,
+//   requireUser,
+//   updatePublicAccess,
+// );
+
 router.patch(
   "/:id/public-access",
   authMiddleware,
   requireUser,
-  updatePublicAccess,
+  updatePublicLoanAccess,
 );
 export default router;

@@ -1,5 +1,6 @@
 import IBorrowerRepo from "../domain/IBorrowerRepo.js";
 import db from "../../../core/database/db.js";
+import crypto from "crypto";
 
 export default class BorrowerRepoImpl extends IBorrowerRepo {
   async create(borrower) {
@@ -47,20 +48,20 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     return result.rows;
   }
 
-  async updatePublicAccess(borrowerId, enabled, userId) {
-    const result = await db.query(
-      `
-    UPDATE borrowers
-    SET token_enabled = $1
-    WHERE borrower_id = $2
-      AND user_id = $3
-    RETURNING *
-    `,
-      [enabled, borrowerId, userId],
-    );
+  // async updatePublicAccess(borrowerId, enabled, userId) {
+  //   const result = await db.query(
+  //     `
+  //   UPDATE borrowers
+  //   SET token_enabled = $1
+  //   WHERE borrower_id = $2
+  //     AND user_id = $3
+  //   RETURNING *
+  //   `,
+  //     [enabled, borrowerId, userId],
+  //   );
 
-    return result.rows[0];
-  }
+  //   return result.rows[0];
+  // }
 
   async getTotalLoanByBorrowerIds(borrowerIds) {
     const result = await db.query(
@@ -173,6 +174,44 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     RETURNING *
     `,
       [imageUrl, borrowerId, userId],
+    );
+
+    return result.rows[0];
+  }
+
+  async updatePublicLoanAccess(borrowerId, enabled, userId) {
+    let token = null;
+
+    if (enabled) {
+      token =
+        crypto.randomBytes(24).toString("hex") +
+        String(userId) +
+        String(borrowerId);
+    }
+
+    console.log("GENERATED TOKEN:", token);
+    console.log("GENERATED TOKEN:", enabled);
+
+    const result = await db.query(
+      `
+  UPDATE borrowers
+  SET
+    token_enabled = $1,
+    public_token =
+      CASE
+        WHEN public_token IS NULL
+          OR public_token = ''
+        THEN $2
+        ELSE public_token
+      END
+  WHERE borrower_id = $3
+    AND user_id = $4
+  RETURNING
+    borrower_id,
+    token_enabled,
+    public_token
+  `,
+      [enabled, token, borrowerId, userId],
     );
 
     return result.rows[0];

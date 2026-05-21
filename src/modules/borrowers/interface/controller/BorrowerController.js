@@ -75,13 +75,31 @@ export const uploadBorrowerProfileImage = asyncHandler(async (req, res) => {
   });
 });
 
-export const updatePublicAccess = asyncHandler(async (req, res) => {
+// export const updatePublicAccess = asyncHandler(async (req, res) => {
+//   const userId = req.user.id;
+//   const borrowerId = req.params.id;
+
+//   const { enabled } = req.body;
+//   const result = await borrowerService.updatePublicAccess(
+//     borrowerId,
+//     enabled,
+//     userId,
+//   );
+
+//   return sendSuccess(res, {
+//     statusCode: 200,
+//     message: "Public access updated",
+//     data: result,
+//   });
+// });
+
+export const updatePublicLoanAccess = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const borrowerId = req.params.id;
 
-  const { enabled } = req.body;
+  const enabled = req.body.enabled === true || req.body.enabled === "true";
 
-  const result = await borrowerService.updatePublicAccess(
+  const result = await borrowerService.updatePublicLoanAccess(
     borrowerId,
     enabled,
     userId,
@@ -89,7 +107,7 @@ export const updatePublicAccess = asyncHandler(async (req, res) => {
 
   return sendSuccess(res, {
     statusCode: 200,
-    message: "Public access updated",
+    message: "Public loan access updated",
     data: result,
   });
 });
