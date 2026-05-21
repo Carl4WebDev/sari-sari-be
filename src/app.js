@@ -9,6 +9,8 @@ import borrowerRoutes from "./modules/borrowers/interface/borrowerRoutes.js";
 import loanRoutes from "./modules/loans/interface/loanRoutes.js";
 import paymentRoutes from "./modules/payments/interface/paymentRoutes.js";
 
+import productRoutes from "./modules/products/interface/productRoutes.js";
+
 dotenv.config();
 
 const app = express();
@@ -29,5 +31,6 @@ app.use("/api/users", userRoutes);
 app.use("/api/borrowers", borrowerRoutes);
 app.use("/api/loans", loanRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/products", productRoutes);
 
 app.use(errorHandler);
