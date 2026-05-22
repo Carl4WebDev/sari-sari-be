@@ -139,4 +139,19 @@ export default class BorrowerService {
   async reactivateBorrower(borrowerId, userId) {
     return await this.borrowerRepo.reactivateBorrower(borrowerId, userId);
   }
+  async createNote(borrowerId, noteText) {
+    return await this.borrowerRepo.createNote(borrowerId, noteText);
+  }
+
+  async getBorrowerNotes(borrowerId) {
+    return await this.borrowerRepo.getNotesByBorrowerId(borrowerId);
+  }
+
+  async updateNote(borrowerId, noteId, noteText) {
+    return await this.borrowerRepo.updateNote(noteId, borrowerId, noteText);
+  }
+
+  async deleteNote(borrowerId, noteId) {
+    return await this.borrowerRepo.deleteNote(noteId, borrowerId);
+  }
 }

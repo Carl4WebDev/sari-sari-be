@@ -9,6 +9,10 @@ import {
   archiveBorrower,
   getArchivedBorrowers,
   reactivateBorrower,
+  createBorrowerNote,
+  getBorrowerNotes,
+  updateBorrowerNote,
+  deleteBorrowerNote,
 } from "./Controller/BorrowerController.js";
 
 import authMiddleware from "../../../core/middleware/Auth.js";
@@ -59,5 +63,28 @@ router.patch(
   authMiddleware,
   requireUser,
   reactivateBorrower,
+);
+
+router.get("/:borrowerId/notes", authMiddleware, requireUser, getBorrowerNotes);
+
+router.post(
+  "/:borrowerId/notes",
+  authMiddleware,
+  requireUser,
+  createBorrowerNote,
+);
+
+router.patch(
+  "/:borrowerId/notes/:noteId",
+  authMiddleware,
+  requireUser,
+  updateBorrowerNote,
+);
+
+router.delete(
+  "/:borrowerId/notes/:noteId",
+  authMiddleware,
+  requireUser,
+  deleteBorrowerNote,
 );
 export default router;

@@ -149,3 +149,53 @@ export const reactivateBorrower = asyncHandler(async (req, res) => {
     data: result,
   });
 });
+
+export const createBorrowerNote = asyncHandler(async (req, res) => {
+  const { borrowerId } = req.params;
+  const { note_text } = req.body;
+
+  const note = await borrowerService.createNote(borrowerId, note_text);
+
+  return sendSuccess(res, {
+    statusCode: 201,
+    message: "Note created",
+    data: note,
+  });
+});
+
+export const getBorrowerNotes = asyncHandler(async (req, res) => {
+  const { borrowerId } = req.params;
+
+  const notes = await borrowerService.getBorrowerNotes(borrowerId);
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Borrower notes fetched",
+    data: notes,
+  });
+});
+
+export const updateBorrowerNote = asyncHandler(async (req, res) => {
+  const { borrowerId, noteId } = req.params;
+  const { note_text } = req.body;
+
+  const note = await borrowerService.updateNote(borrowerId, noteId, note_text);
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Note updated",
+    data: note,
+  });
+});
+
+export const deleteBorrowerNote = asyncHandler(async (req, res) => {
+  const { borrowerId, noteId } = req.params;
+
+  const note = await borrowerService.deleteNote(borrowerId, noteId);
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Note deleted",
+    data: note,
+  });
+});

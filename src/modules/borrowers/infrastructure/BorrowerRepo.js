@@ -326,4 +326,67 @@ WHERE b.user_id = $1
 
     return result.rows[0];
   }
+
+  async createNote(borrowerId, noteText) {
+    const result = await db.query(
+      `
+    INSERT INTO borrower_notes (
+      borrower_id,
+      note_text
+    )
+    VALUES ($1, $2)
+    RETURNING *
+    `,
+      [borrowerId, noteText],
+    );
+
+    return result.rows[0];
+  }
+
+  async getNotesByBorrowerId(borrowerId) {
+    const result = await db.query(
+      `
+    SELECT
+      borrower_note_id,
+      borrower_id,
+      note_text,
+      created_at
+    FROM borrower_notes
+    WHERE borrower_id = $1
+    ORDER BY created_at DESC
+    `,
+      [borrowerId],
+    );
+
+    return result.rows;
+  }
+
+  async updateNote(noteId, borrowerId, noteText) {
+    const result = await db.query(
+      `
+    UPDATE borrower_notes
+    SET note_text = $1
+    WHERE borrower_note_id = $2
+      AND borrower_id = $3
+    RETURNING *
+    `,
+      [noteText, noteId, borrowerId],
+    );
+
+    return result.rows[0];
+  }
+
+  async deleteNote(noteId, borrowerId) {
+    const result = await db.query(
+      `
+    DELETE FROM borrower_notes
+    WHERE borrower_note_id = $1
+      AND borrower_id = $2
+    RETURNING *
+    `,
+      [noteId, borrowerId],
+    );
+
+    return result.rows[0];
+  }
 }
