@@ -6,7 +6,9 @@ export default class ProductService {
   }
 
   async createProduct(data, userId) {
-    if (!data.product_name) {
+    const normalizedName = data.product_name?.trim();
+
+    if (!normalizedName) {
       throw new Error("Product name is required");
     }
 
@@ -14,13 +16,21 @@ export default class ProductService {
       throw new Error("Product price is required");
     }
 
+    const existingProduct = await this.productRepo.findByNameAndUserId(
+      normalizedName,
+      userId,
+    );
+
+    if (existingProduct) {
+      throw new Error("Product already exists");
+    }
+
     return await this.productRepo.create({
       user_id: userId,
-      product_name: data.product_name,
+      product_name: normalizedName,
       product_price: Number(data.product_price),
     });
   }
-
   async getProducts(userId) {
     return await this.productRepo.findAllByUserId(userId);
   }

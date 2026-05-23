@@ -141,4 +141,19 @@ export default class ProductRepo {
 
     return result.rows[0];
   }
+
+  async findByNameAndUserId(productName, userId) {
+    const result = await db.query(
+      `
+    SELECT *
+    FROM product_master
+    WHERE LOWER(TRIM(product_name)) = LOWER(TRIM($1))
+      AND user_id = $2
+    LIMIT 1
+    `,
+      [productName, userId],
+    );
+
+    return result.rows[0] || null;
+  }
 }
