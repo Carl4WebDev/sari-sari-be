@@ -2,7 +2,7 @@ import express from "express";
 
 import authMiddleware from "../../../core/middleware/Auth.js";
 
-import { getDashboard } from "./Controller/DashboardController.js";
+import { getDashboard } from "./controller/DashboardController.js";
 
 const router = express.Router();
 
