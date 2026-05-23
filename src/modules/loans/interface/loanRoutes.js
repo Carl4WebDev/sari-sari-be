@@ -1,6 +1,6 @@
 import express from "express";
 import authMiddleware from "../../../core/middleware/Auth.js";
-import { createLoan } from "./Controller/LoanController.js";
+import { createLoan } from "./controller/LoanController.js";
 import { requireUser } from "../../../core/middleware/requireUser.js";
 
 const router = express.Router();
