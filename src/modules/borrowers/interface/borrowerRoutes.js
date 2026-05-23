@@ -13,7 +13,7 @@ import {
   getBorrowerNotes,
   updateBorrowerNote,
   deleteBorrowerNote,
-} from "./Controller/BorrowerController.js";
+} from "./controller/BorrowerController.js";
 
 import authMiddleware from "../../../core/middleware/Auth.js";
 import { requireUser } from "../../../core/middleware/requireUser.js";
