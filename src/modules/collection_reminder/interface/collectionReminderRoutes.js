@@ -8,7 +8,7 @@ import {
   getDashboardReminders,
   updateReminderStatus,
   deleteReminder,
-} from "./Controller/CollectionReminderController.js";
+} from "./controller/CollectionReminderController.js";
 
 const router = express.Router();
 
