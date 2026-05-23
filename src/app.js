@@ -23,9 +23,20 @@ const app = express();
 export default app;
 
 // 🔥 CORS goes here
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://carl4dev-sarisari-loan-tracker.netlify.app",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // your frontend port
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   }),
 );
