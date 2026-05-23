@@ -9,10 +9,43 @@ export default class AuthService {
     this.tokenService = tokenService;
   }
 
-  async register({ email, password, store_name }) {
-    if (!email || !password || !store_name) {
-      throw new ValidationError("All fields are required");
+  validateRegisterInput({ email, password, store_name }) {
+    const errors = {};
+
+    const normalizedEmail = email?.trim().toLowerCase();
+    const normalizedStoreName = store_name?.trim();
+
+    if (!normalizedEmail) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      errors.email = "Invalid email format";
     }
+
+    if (!password) {
+      errors.password = "Password is required";
+    } else if (password.length < 8) {
+      errors.password = "Password must be at least 8 characters";
+    }
+
+    if (!normalizedStoreName) {
+      errors.store_name = "Store name is required";
+    } else if (normalizedStoreName.length > 100) {
+      errors.store_name = "Store name must not exceed 100 characters";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      throw new ValidationError("Validation failed", errors);
+    }
+
+    return {
+      email: normalizedEmail,
+      password,
+      store_name: normalizedStoreName,
+    };
+  }
+
+  async register(data) {
+    const { email, password, store_name } = this.validateRegisterInput(data);
 
     const existingUser = await this.userRepository.findByEmail(email);
 
@@ -31,21 +64,53 @@ export default class AuthService {
     return user;
   }
 
-  async login({ email, password }) {
-    if (!email || !password) {
-      throw new ValidationError("Email and password required");
+  validateLoginInput({ email, password }) {
+    const errors = {};
+
+    const normalizedEmail = email?.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      errors.email = "Invalid email format";
     }
+
+    if (!password) {
+      errors.password = "Password is required";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      throw new ValidationError("Validation failed", errors);
+    }
+
+    return {
+      email: normalizedEmail,
+      password,
+    };
+  }
+
+  async login(data) {
+    const { email, password } = this.validateLoginInput(data);
 
     const user = await this.userRepository.findByEmail(email);
 
+    // Generic message. Do not reveal if email exists.
     if (!user) {
-      throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
+      throw new AppError(
+        "Invalid email or password",
+        401,
+        "INVALID_CREDENTIALS",
+      );
     }
 
     const match = await bcrypt.compare(password, user.password_hash);
 
     if (!match) {
-      throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
+      throw new AppError(
+        "Invalid email or password",
+        401,
+        "INVALID_CREDENTIALS",
+      );
     }
 
     const token = this.tokenService.generateToken({

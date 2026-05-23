@@ -43,6 +43,8 @@ export default class DashboardService {
 
         type: a.type,
 
+        borrower_id: a.borrower_id,
+
         amount: Number(a.total_amount),
 
         borrower_name: `${a.first_name} ${a.last_name}`,

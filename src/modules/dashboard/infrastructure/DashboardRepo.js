@@ -137,7 +137,8 @@ export default class DashboardRepo {
       t.created_at,
       b.borrower_id,
       b.first_name,
-      b.last_name
+      b.last_name,
+      b.borrower_id
     FROM transactions t
     INNER JOIN borrowers b
       ON b.borrower_id = t.borrower_id

@@ -1,4 +1,7 @@
 import Product from "../domain/Product.js";
+import AppError from "../../../core/errors/AppError.js";
+import ValidationError from "../../../core/errors/ValidationError.js";
+import { validateProductInput } from "./validators/productValidator.js";
 
 export default class ProductService {
   constructor(productRepo) {
@@ -6,31 +9,27 @@ export default class ProductService {
   }
 
   async createProduct(data, userId) {
-    const normalizedName = data.product_name?.trim();
-
-    if (!normalizedName) {
-      throw new Error("Product name is required");
-    }
-
-    if (!data.product_price) {
-      throw new Error("Product price is required");
-    }
+    const validatedData = validateProductInput(data);
 
     const existingProduct = await this.productRepo.findByNameAndUserId(
-      normalizedName,
+      validatedData.product_name,
       userId,
     );
 
     if (existingProduct) {
-      throw new Error("Product already exists");
+      throw new AppError("Product already exists", 409, "PRODUCT_EXISTS");
     }
 
     return await this.productRepo.create({
       user_id: userId,
-      product_name: normalizedName,
-      product_price: Number(data.product_price),
+      product_name: validatedData.product_name,
+      product_price: validatedData.product_price,
+      quantity: validatedData.quantity,
+      category: validatedData.category,
+      unit: validatedData.unit,
     });
   }
+
   async getProducts(userId) {
     return await this.productRepo.findAllByUserId(userId);
   }
@@ -42,10 +41,12 @@ export default class ProductService {
     );
 
     if (!existingProduct) {
-      throw new Error("Product not found");
+      throw new AppError("Product not found", 404, "PRODUCT_NOT_FOUND");
     }
 
-    return await this.productRepo.update(productId, userId, data);
+    const validatedData = validateProductInput(data);
+
+    return await this.productRepo.update(productId, userId, validatedData);
   }
 
   async deleteProduct(productId, userId) {
@@ -55,7 +56,7 @@ export default class ProductService {
     );
 
     if (!existingProduct) {
-      throw new Error("Product not found");
+      throw new AppError("Product not found", 404, "PRODUCT_NOT_FOUND");
     }
 
     return await this.productRepo.deactivate(productId, userId);

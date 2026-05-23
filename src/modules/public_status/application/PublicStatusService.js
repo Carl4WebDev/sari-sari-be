@@ -1,4 +1,5 @@
 import NotFoundError from "../../../core/errors/NotFoundError.js";
+import { validatePublicToken } from "./validators/publicStatusValidator.js";
 
 export default class PublicStatusService {
   constructor(publicStatusRepo) {
@@ -6,11 +7,10 @@ export default class PublicStatusService {
   }
 
   async getStatusByToken(token) {
-    if (!token) {
-      throw new NotFoundError("Status page not found");
-    }
+    const validToken = validatePublicToken(token);
 
-    const borrower = await this.publicStatusRepo.findBorrowerByToken(token);
+    const borrower =
+      await this.publicStatusRepo.findBorrowerByToken(validToken);
 
     if (!borrower) {
       throw new NotFoundError("Status page not found");
@@ -28,9 +28,9 @@ export default class PublicStatusService {
       return sum;
     }, 0);
 
-    const lastPayment = [...transactions]
-      .reverse()
-      .find((transaction) => transaction.type === "PAYMENT");
+    const lastPayment = transactions.find(
+      (transaction) => transaction.type === "PAYMENT",
+    );
 
     return {
       store: {

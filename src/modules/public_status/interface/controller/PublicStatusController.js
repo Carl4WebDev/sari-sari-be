@@ -12,6 +12,9 @@ export const getPublicStatus = asyncHandler(async (req, res) => {
 
   const result = await publicStatusService.getStatusByToken(token);
 
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Pragma", "no-cache");
+
   return sendSuccess(res, {
     statusCode: 200,
     message: "Public status fetched",

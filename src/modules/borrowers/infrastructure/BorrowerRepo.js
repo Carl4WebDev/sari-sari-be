@@ -294,13 +294,10 @@ WHERE b.user_id = $1
 
     if (enabled) {
       token =
-        crypto.randomBytes(24).toString("hex") +
+        crypto.randomBytes(32).toString("base64url") +
         String(userId) +
         String(borrowerId);
     }
-
-    console.log("GENERATED TOKEN:", token);
-    console.log("GENERATED TOKEN:", enabled);
 
     const result = await db.query(
       `
@@ -388,5 +385,20 @@ WHERE b.user_id = $1
     );
 
     return result.rows[0];
+  }
+
+  async updatePublicTokenExpiration(borrowerId, userId, expiresAt) {
+    const result = await db.query(
+      `
+    UPDATE borrowers
+    SET public_token_expires_at = $1
+    WHERE borrower_id = $2
+      AND user_id = $3
+    RETURNING *
+    `,
+      [expiresAt, borrowerId, userId],
+    );
+
+    return result.rows[0] || null;
   }
 }
