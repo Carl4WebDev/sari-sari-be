@@ -201,14 +201,22 @@ WHERE b.user_id = $1
     const result = await db.query(
       `
     SELECT
-      transaction_id,
-      type,
-      transaction_date,
-      total_amount,
-      created_at
-    FROM transactions
-    WHERE borrower_id = $1
-    ORDER BY created_at DESC, transaction_id DESC
+      t.transaction_id,
+      t.type,
+      t.transaction_date,
+      t.total_amount,
+      t.created_at,
+      pd.payment_method,
+      pd.note AS payment_note
+
+    FROM transactions t
+
+    LEFT JOIN payment_details pd
+      ON pd.transaction_id = t.transaction_id
+
+    WHERE t.borrower_id = $1
+
+    ORDER BY t.created_at DESC, t.transaction_id DESC
     `,
       [borrowerId],
     );
