@@ -27,17 +27,28 @@ export default class CollectionReminderService {
   async getDashboardReminders(userId) {
     const reminders = await this.repo.findDashboardReminders(userId);
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toLocaleDateString("en-CA", {
+      timeZone: "Asia/Manila",
+    });
 
     return {
       todays_collections: reminders.filter(
-        (r) => String(r.due_date).split("T")[0] === today,
+        (r) =>
+          new Date(r.due_date).toLocaleDateString("en-CA", {
+            timeZone: "Asia/Manila",
+          }) === today,
       ),
       overdue: reminders.filter(
-        (r) => String(r.due_date).split("T")[0] < today,
+        (r) =>
+          new Date(r.due_date).toLocaleDateString("en-CA", {
+            timeZone: "Asia/Manila",
+          }) < today,
       ),
       upcoming: reminders.filter(
-        (r) => String(r.due_date).split("T")[0] > today,
+        (r) =>
+          new Date(r.due_date).toLocaleDateString("en-CA", {
+            timeZone: "Asia/Manila",
+          }) > today,
       ),
     };
   }
