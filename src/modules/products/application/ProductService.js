@@ -22,7 +22,7 @@ export default class ProductService {
 
     return await this.productRepo.create({
       user_id: userId,
-      product_name: validatedData.product_name,
+      product_name: validatedData.product_name.toUpperCase(),
       product_price: validatedData.product_price,
       quantity: validatedData.quantity,
       category: validatedData.category,
@@ -31,7 +31,12 @@ export default class ProductService {
   }
 
   async getProducts(userId) {
-    return await this.productRepo.findAllByUserId(userId);
+    const products = await this.productRepo.findAllByUserId(userId);
+
+    return products.map((product) => ({
+      ...product,
+      product_name: product.product_name.toUpperCase(),
+    }));
   }
 
   async updateProduct(productId, data, userId) {

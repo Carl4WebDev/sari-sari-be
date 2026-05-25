@@ -16,9 +16,11 @@ export default class BorrowerService {
 
     const borrower = new Borrower({
       user_id: userId,
-      first_name: validatedData.first_name,
-      middle_name: validatedData.middle_name,
-      last_name: validatedData.last_name,
+      first_name: validatedData.first_name.toUpperCase(),
+      middle_name: validatedData.middle_name
+        ? validatedData.middle_name.toUpperCase()
+        : null,
+      last_name: validatedData.last_name.toUpperCase(),
       dob: validatedData.dob,
       contact_number: validatedData.contact_number,
     });
@@ -42,6 +44,9 @@ export default class BorrowerService {
 
     return borrowers.map((b) => ({
       ...b,
+      first_name: b.first_name?.toUpperCase(),
+      middle_name: b.middle_name?.toUpperCase(),
+      last_name: b.last_name?.toUpperCase(),
       total_loan: loanMap.get(b.borrower_id) || 0,
     }));
   }
