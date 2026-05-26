@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 
 export default class AuthTokenService {
   generateToken(payload) {
-    console.log("DECODED TOKEN from service:", payload);
     return jwt.sign(
       {
         userId: payload.userId,

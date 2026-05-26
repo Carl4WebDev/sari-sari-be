@@ -9,7 +9,6 @@ const borrowerService = new BorrowerService(borrowerRepository);
 
 export const createBorrower = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  console.log(userId);
 
   const result = await borrowerService.createBorrower(req.body, userId);
 
@@ -35,8 +34,6 @@ export const getBorrowers = asyncHandler(async (req, res) => {
 export const getBorrowerTransactions = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const borrowerId = req.params.id;
-  console.log(userId);
-  console.log(borrowerId);
 
   const transactions = await borrowerService.getBorrowerTransactions(
     borrowerId,
@@ -151,10 +148,11 @@ export const reactivateBorrower = asyncHandler(async (req, res) => {
 });
 
 export const createBorrowerNote = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
   const { borrowerId } = req.params;
   const { note_text } = req.body;
 
-  const note = await borrowerService.createNote(borrowerId, note_text);
+  const note = await borrowerService.createNote(borrowerId, note_text, userId);
 
   return sendSuccess(res, {
     statusCode: 201,
@@ -164,9 +162,10 @@ export const createBorrowerNote = asyncHandler(async (req, res) => {
 });
 
 export const getBorrowerNotes = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
   const { borrowerId } = req.params;
 
-  const notes = await borrowerService.getBorrowerNotes(borrowerId);
+  const notes = await borrowerService.getBorrowerNotes(borrowerId, userId);
 
   return sendSuccess(res, {
     statusCode: 200,
@@ -176,10 +175,11 @@ export const getBorrowerNotes = asyncHandler(async (req, res) => {
 });
 
 export const updateBorrowerNote = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
   const { borrowerId, noteId } = req.params;
   const { note_text } = req.body;
 
-  const note = await borrowerService.updateNote(borrowerId, noteId, note_text);
+  const note = await borrowerService.updateNote(borrowerId, noteId, note_text, userId);
 
   return sendSuccess(res, {
     statusCode: 200,
@@ -189,9 +189,10 @@ export const updateBorrowerNote = asyncHandler(async (req, res) => {
 });
 
 export const deleteBorrowerNote = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
   const { borrowerId, noteId } = req.params;
 
-  const note = await borrowerService.deleteNote(borrowerId, noteId);
+  const note = await borrowerService.deleteNote(borrowerId, noteId, userId);
 
   return sendSuccess(res, {
     statusCode: 200,

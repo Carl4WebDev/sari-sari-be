@@ -1,6 +1,9 @@
+import AppError from "../../../core/errors/AppError.js";
+
 export default class LoanService {
-  constructor(loanRepo) {
+  constructor(loanRepo, borrowerRepo) {
     this.loanRepo = loanRepo;
+    this.borrowerRepo = borrowerRepo;
   }
 
   async createLoan(data, userId) {
@@ -8,6 +11,15 @@ export default class LoanService {
 
     if (!borrower_id) {
       throw new Error("Borrower is required");
+    }
+
+    const borrower = await this.borrowerRepo.findByIdAndUserId(
+      borrower_id,
+      userId,
+    );
+
+    if (!borrower) {
+      throw new AppError("Borrower not found", 404, "BORROWER_NOT_FOUND");
     }
 
     if (!items || items.length === 0) {

@@ -155,17 +155,20 @@ export default class BorrowerService {
     return borrower;
   }
 
-  async createNote(borrowerId, noteText) {
+  async createNote(borrowerId, noteText, userId) {
+    await this._verifyBorrowerOwnership(borrowerId, userId);
     const validatedNote = validateBorrowerNoteInput(noteText);
 
     return await this.borrowerRepo.createNote(borrowerId, validatedNote);
   }
 
-  async getBorrowerNotes(borrowerId) {
+  async getBorrowerNotes(borrowerId, userId) {
+    await this._verifyBorrowerOwnership(borrowerId, userId);
     return await this.borrowerRepo.getNotesByBorrowerId(borrowerId);
   }
 
-  async updateNote(borrowerId, noteId, noteText) {
+  async updateNote(borrowerId, noteId, noteText, userId) {
+    await this._verifyBorrowerOwnership(borrowerId, userId);
     const validatedNote = validateBorrowerNoteInput(noteText);
 
     return await this.borrowerRepo.updateNote(
@@ -175,8 +178,22 @@ export default class BorrowerService {
     );
   }
 
-  async deleteNote(borrowerId, noteId) {
+  async deleteNote(borrowerId, noteId, userId) {
+    await this._verifyBorrowerOwnership(borrowerId, userId);
     return await this.borrowerRepo.deleteNote(noteId, borrowerId);
+  }
+
+  async _verifyBorrowerOwnership(borrowerId, userId) {
+    const borrower = await this.borrowerRepo.findByIdAndUserId(
+      borrowerId,
+      userId,
+    );
+
+    if (!borrower) {
+      throw new AppError("Borrower not found", 404, "BORROWER_NOT_FOUND");
+    }
+
+    return borrower;
   }
 
   async updatePublicTokenExpiration(borrowerId, userId, expiresAt) {
