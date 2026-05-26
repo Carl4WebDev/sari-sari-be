@@ -27,10 +27,10 @@ export const validateBorrowerInput = (data) => {
 
   const borrower = {
     first_name: sanitizeString(data.first_name),
-    middle_name: sanitizeString(data.middle_name),
+    middle_name: sanitizeString(data.middle_name) || null,
     last_name: sanitizeString(data.last_name),
-    dob: data.dob,
-    contact_number: sanitizeString(data.contact_number),
+    dob: data.dob || null,
+    contact_number: sanitizeString(data.contact_number) || null,
   };
 
   if (isEmpty(borrower.first_name)) {

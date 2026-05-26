@@ -89,7 +89,7 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
 
     GROUP BY b.borrower_id
 
-    ORDER BY b.created_at DESC
+    ORDER BY b.first_name ASC, b.last_name ASC
     `,
       [userId],
     );
@@ -147,7 +147,7 @@ WHERE b.user_id = $1
 
     GROUP BY b.borrower_id
 
-    ORDER BY b.created_at DESC
+    ORDER BY b.first_name ASC, b.last_name ASC
     `,
       [userId],
     );
