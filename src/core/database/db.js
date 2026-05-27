@@ -7,8 +7,15 @@ const { Pool } = pg;
 
 let pool;
 
+const poolConfig = {
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
+};
+
 if (process.env.DATABASE_URL) {
   pool = new Pool({
+    ...poolConfig,
     connectionString: process.env.DATABASE_URL,
     ssl:
       process.env.NODE_ENV === "production"
@@ -17,6 +24,7 @@ if (process.env.DATABASE_URL) {
   });
 } else {
   pool = new Pool({
+    ...poolConfig,
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
     database: process.env.DB_NAME,

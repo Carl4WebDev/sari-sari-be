@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import compression from "compression";
 
 import userRoutes from "./modules/users/interface/userRoutes.js";
 import errorHandler from "./core/middleware/errorHandler.js";
@@ -45,6 +46,7 @@ app.use(
     credentials: true,
   }),
 );
+app.use(compression());
 app.use(express.json());
 
 app.use("/uploads", express.static("uploads"));
