@@ -128,4 +128,80 @@ export default class AuthService {
       },
     };
   }
+
+  async getProfile(userId) {
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
+      throw new AppError("User not found", 404, "USER_NOT_FOUND");
+    }
+
+    return user;
+  }
+
+  async updateStoreName(userId, storeName) {
+    const errors = {};
+
+    const normalizedStoreName = storeName?.trim();
+
+    if (!normalizedStoreName) {
+      errors.store_name = "Store name is required";
+    } else if (normalizedStoreName.length > 100) {
+      errors.store_name = "Store name must not exceed 100 characters";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      throw new ValidationError("Validation failed", errors);
+    }
+
+    const updated = await this.userRepository.updateStoreName(
+      userId,
+      normalizedStoreName,
+    );
+
+    if (!updated) {
+      throw new AppError("User not found", 404, "USER_NOT_FOUND");
+    }
+
+    return updated;
+  }
+
+  async changePassword(userId, currentPassword, newPassword) {
+    const errors = {};
+
+    if (!currentPassword) {
+      errors.current_password = "Current password is required";
+    }
+
+    if (!newPassword) {
+      errors.new_password = "New password is required";
+    } else if (newPassword.length < 8) {
+      errors.new_password = "New password must be at least 8 characters";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      throw new ValidationError("Validation failed", errors);
+    }
+
+    const user = await this.userRepository.findByIdWithPassword(userId);
+
+    if (!user) {
+      throw new AppError("User not found", 404, "USER_NOT_FOUND");
+    }
+
+    const match = await bcrypt.compare(currentPassword, user.password_hash);
+
+    if (!match) {
+      throw new AppError(
+        "Current password is incorrect",
+        401,
+        "INVALID_PASSWORD",
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.userRepository.updatePassword(userId, passwordHash);
+
+    return { message: "Password updated successfully" };
+  }
 }

@@ -26,3 +26,40 @@ export const login = asyncHandler(async (req, res) => {
     data: result,
   });
 });
+
+export const getProfile = asyncHandler(async (req, res) => {
+  const result = await authService.getProfile(req.user.id);
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Profile fetched",
+    data: result,
+  });
+});
+
+export const updateStoreName = asyncHandler(async (req, res) => {
+  const result = await authService.updateStoreName(
+    req.user.id,
+    req.body.store_name,
+  );
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Store name updated",
+    data: result,
+  });
+});
+
+export const changePassword = asyncHandler(async (req, res) => {
+  const result = await authService.changePassword(
+    req.user.id,
+    req.body.current_password,
+    req.body.new_password,
+  );
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Password changed",
+    data: result,
+  });
+});
