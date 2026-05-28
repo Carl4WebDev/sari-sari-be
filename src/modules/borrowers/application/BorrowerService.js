@@ -53,21 +53,12 @@ export default class BorrowerService {
 
     if (!borrowers.length) return [];
 
-    const borrowerIds = borrowers.map((b) => b.borrower_id);
-
-    const loanTotals =
-      await this.borrowerRepo.getTotalLoanByBorrowerIds(borrowerIds);
-
-    const loanMap = new Map(
-      loanTotals.map((l) => [l.borrower_id, Number(l.total_loan)]),
-    );
-
     return borrowers.map((b) => ({
       ...b,
       first_name: b.first_name?.toUpperCase(),
       middle_name: b.middle_name?.toUpperCase(),
       last_name: b.last_name?.toUpperCase(),
-      total_loan: loanMap.get(b.borrower_id) || 0,
+      total_loan: b.balance,
     }));
   }
 

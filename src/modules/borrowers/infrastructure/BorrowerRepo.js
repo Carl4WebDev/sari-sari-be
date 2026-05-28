@@ -201,30 +201,6 @@ WHERE b.user_id = $1
   //   return result.rows[0];
   // }
 
-  async getTotalLoanByBorrowerIds(borrowerIds) {
-    const result = await db.query(
-      `
-    SELECT
-      borrower_id,
-      COALESCE(
-        SUM(
-          CASE
-            WHEN type = 'LOAN' THEN total_amount
-            WHEN type = 'PAYMENT' THEN -total_amount
-            ELSE 0
-          END
-        ),
-      0) AS total_loan
-    FROM transactions
-    WHERE borrower_id = ANY($1)
-    GROUP BY borrower_id
-    `,
-      [borrowerIds],
-    );
-
-    return result.rows;
-  }
-
   async findTransactionsByBorrowerId(borrowerId) {
     const result = await db.query(
       `

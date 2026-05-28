@@ -4,22 +4,23 @@ export default class DashboardService {
   }
 
   async getDashboard(userId) {
-    const stats = await this.dashboardRepo.getDashboardStats(userId);
-
-    const paymentStats =
-      await this.dashboardRepo.getBorrowerPaymentStats(userId);
-
-    const busiestDay = await this.dashboardRepo.getBusiestDay(userId);
-
-    const busiestHour = await this.dashboardRepo.getBusiestHour(userId);
-
-    const recentActivities =
-      await this.dashboardRepo.getRecentActivities(userId);
-
-    const monthlyUtangTrend =
-      await this.dashboardRepo.getMonthlyUtangTrend(userId);
-
-    const topBorrowers = await this.dashboardRepo.getTopBorrowers(userId);
+    const [
+      stats,
+      paymentStats,
+      busiestDay,
+      busiestHour,
+      recentActivities,
+      monthlyUtangTrend,
+      topBorrowers,
+    ] = await Promise.all([
+      this.dashboardRepo.getDashboardStats(userId),
+      this.dashboardRepo.getBorrowerPaymentStats(userId),
+      this.dashboardRepo.getBusiestDay(userId),
+      this.dashboardRepo.getBusiestHour(userId),
+      this.dashboardRepo.getRecentActivities(userId),
+      this.dashboardRepo.getMonthlyUtangTrend(userId),
+      this.dashboardRepo.getTopBorrowers(userId),
+    ]);
 
     return {
       total_utang: Number(stats.total_utang || 0),
