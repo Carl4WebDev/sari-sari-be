@@ -28,6 +28,7 @@ export default class LoanService {
 
     const itemsWithSubtotal = items.map((i) => ({
       product_name: i.product_name,
+      product_id: i.product_id || null,
       quantity: i.quantity,
       price: i.price,
       subtotal: i.quantity * i.price,

@@ -23,12 +23,13 @@ export default class LoanRepo {
         await client.query(
           `
           INSERT INTO loan_items
-          (transaction_id, product_name, quantity, price, subtotal)
-          VALUES ($1,$2,$3,$4,$5)
+          (transaction_id, product_name, product_id, quantity, price, subtotal)
+          VALUES ($1,$2,$3,$4,$5,$6)
           `,
           [
             transactionId,
             item.product_name,
+            item.product_id,
             item.quantity,
             item.price,
             item.subtotal,

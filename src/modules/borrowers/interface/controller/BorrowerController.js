@@ -55,9 +55,7 @@ export const uploadBorrowerProfileImage = asyncHandler(async (req, res) => {
     throw new Error("Profile image is required");
   }
 
-  const baseUrl = process.env.APP_URL;
-
-  const imageUrl = `${baseUrl}/uploads/borrowers/${req.file.filename}`;
+  const imageUrl = `/uploads/borrowers/${req.file.filename}`;
 
   const borrower = await borrowerService.uploadBorrowerProfileImage(
     borrowerId,
