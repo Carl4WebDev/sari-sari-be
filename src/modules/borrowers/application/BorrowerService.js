@@ -98,6 +98,49 @@ export default class BorrowerService {
     }));
   }
 
+  async voidTransaction(borrowerId, transactionId, userId, reason) {
+    const borrower = await this.borrowerRepo.findByIdAndUserId(
+      borrowerId,
+      userId,
+    );
+
+    if (!borrower) {
+      throw new AppError("Borrower not found", 404, "BORROWER_NOT_FOUND");
+    }
+
+    const transaction = await this.borrowerRepo.findTransactionById(
+      transactionId,
+    );
+
+    if (!transaction) {
+      throw new AppError("Transaction not found", 404, "TRANSACTION_NOT_FOUND");
+    }
+
+    if (transaction.borrower_id !== Number(borrowerId)) {
+      throw new AppError(
+        "Transaction does not belong to this borrower",
+        403,
+        "TRANSACTION_MISMATCH",
+      );
+    }
+
+    if (transaction.voided) {
+      throw new AppError(
+        "Transaction is already voided",
+        400,
+        "ALREADY_VOIDED",
+      );
+    }
+
+    const result = await this.borrowerRepo.voidTransaction(
+      transactionId,
+      borrowerId,
+      reason,
+    );
+
+    return result;
+  }
+
   async uploadBorrowerProfileImage(borrowerId, userId, imageUrl) {
     if (!borrowerId) {
       throw new ValidationError("Borrower ID is required");

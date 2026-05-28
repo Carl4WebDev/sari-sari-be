@@ -34,6 +34,7 @@ export default class DashboardRepo {
 
       WHERE b.user_id = $1
         AND b.is_active = true
+        AND (t.voided = false OR t.voided IS NULL)
       `,
       [userId],
     );
@@ -73,6 +74,7 @@ export default class DashboardRepo {
 
         WHERE b.user_id = $1
           AND b.is_active = true
+          AND (t.voided = false OR t.voided IS NULL)
 
         GROUP BY b.borrower_id
       ) balances
@@ -96,6 +98,7 @@ export default class DashboardRepo {
 
       WHERE b.user_id = $1
         AND b.is_active = true
+        AND (t.voided = false OR t.voided IS NULL)
 
       GROUP BY day
 
@@ -120,6 +123,7 @@ export default class DashboardRepo {
       ON b.borrower_id = t.borrower_id
     WHERE b.user_id = $1
       AND b.is_active = true
+      AND (t.voided = false OR t.voided IS NULL)
     GROUP BY hour
     ORDER BY total DESC
     LIMIT 1
@@ -147,6 +151,7 @@ export default class DashboardRepo {
       ON b.borrower_id = t.borrower_id
     WHERE b.user_id = $1
       AND b.is_active = true
+      AND (t.voided = false OR t.voided IS NULL)
     ORDER BY t.created_at DESC
     LIMIT 5
     `,
@@ -174,6 +179,7 @@ export default class DashboardRepo {
       ON b.borrower_id = t.borrower_id
     WHERE b.user_id = $1
       AND b.is_active = true
+      AND (t.voided = false OR t.voided IS NULL)
     GROUP BY month_date
     ORDER BY month_date ASC
     `,
@@ -202,6 +208,7 @@ export default class DashboardRepo {
       ON t.borrower_id = b.borrower_id
     WHERE b.user_id = $1
       AND b.is_active = true
+      AND (t.voided = false OR t.voided IS NULL)
     GROUP BY b.borrower_id
     HAVING COALESCE(SUM(
       CASE

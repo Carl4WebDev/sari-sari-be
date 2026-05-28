@@ -14,6 +14,7 @@ import {
   getBorrowerNotes,
   updateBorrowerNote,
   deleteBorrowerNote,
+  voidTransaction,
 } from "./controller/BorrowerController.js";
 
 import authMiddleware from "../../../core/middleware/Auth.js";
@@ -87,6 +88,13 @@ router.delete(
   authMiddleware,
   requireUser,
   deleteBorrowerNote,
+);
+
+router.patch(
+  "/:borrowerId/transactions/:transactionId/void",
+  authMiddleware,
+  requireUser,
+  voidTransaction,
 );
 
 // Must be last — /:id would match more specific paths above

@@ -34,6 +34,9 @@ export default class PublicStatusRepo {
       t.type,
       t.transaction_date AS date,
       t.total_amount AS amount,
+      t.voided,
+      t.voided_at,
+      t.void_reason,
       COALESCE(
         json_agg(
           json_build_object(
@@ -52,7 +55,10 @@ export default class PublicStatusRepo {
       t.transaction_id,
       t.type,
       t.transaction_date,
-      t.total_amount
+      t.total_amount,
+      t.voided,
+      t.voided_at,
+      t.void_reason
     ORDER BY t.transaction_date DESC, t.transaction_id DESC
     LIMIT 50
     `,
@@ -64,6 +70,9 @@ export default class PublicStatusRepo {
       type: row.type,
       date: row.date,
       amount: Number(row.amount),
+      voided: row.voided || false,
+      voided_at: row.voided_at,
+      void_reason: row.void_reason,
       items: row.type === "LOAN" ? row.items : [],
     }));
   }

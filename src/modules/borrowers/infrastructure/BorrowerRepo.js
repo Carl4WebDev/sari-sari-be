@@ -68,6 +68,7 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
       FROM borrowers b
       LEFT JOIN transactions t
         ON t.borrower_id = b.borrower_id
+        AND (t.voided = false OR t.voided IS NULL)
       WHERE b.borrower_id = $1
         AND b.user_id = $2
       GROUP BY b.borrower_id
@@ -111,6 +112,7 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     FROM borrowers b
     LEFT JOIN transactions t
       ON t.borrower_id = b.borrower_id
+      AND (t.voided = false OR t.voided IS NULL)
 
     WHERE b.user_id = $1
       AND b.is_active = false
@@ -169,9 +171,10 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     FROM borrowers b
     LEFT JOIN transactions t
       ON t.borrower_id = b.borrower_id
+      AND (t.voided = false OR t.voided IS NULL)
 
-WHERE b.user_id = $1
-  AND b.is_active = true
+    WHERE b.user_id = $1
+      AND b.is_active = true
 
     GROUP BY b.borrower_id
 
@@ -210,6 +213,9 @@ WHERE b.user_id = $1
       t.transaction_date,
       t.total_amount,
       t.created_at,
+      t.voided,
+      t.voided_at,
+      t.void_reason,
       pd.payment_method,
       pd.note AS payment_note
 
@@ -279,11 +285,41 @@ WHERE b.user_id = $1
       0) AS balance
     FROM transactions
     WHERE borrower_id = $1
+      AND (voided = false OR voided IS NULL)
     `,
       [borrowerId],
     );
 
     return Number(result.rows[0].balance);
+  }
+
+  async voidTransaction(transactionId, borrowerId, reason) {
+    const result = await db.query(
+      `
+    UPDATE transactions
+    SET voided = true, voided_at = NOW(), void_reason = $1
+    WHERE transaction_id = $2
+      AND borrower_id = $3
+      AND (voided = false OR voided IS NULL)
+    RETURNING transaction_id, voided, voided_at, void_reason
+    `,
+      [reason || null, transactionId, borrowerId],
+    );
+
+    return result.rows[0] || null;
+  }
+
+  async findTransactionById(transactionId) {
+    const result = await db.query(
+      `
+    SELECT transaction_id, borrower_id, type, total_amount, voided
+    FROM transactions
+    WHERE transaction_id = $1
+    `,
+      [transactionId],
+    );
+
+    return result.rows[0] || null;
   }
 
   async updateBorrowerProfileImage(borrowerId, userId, imageUrl) {

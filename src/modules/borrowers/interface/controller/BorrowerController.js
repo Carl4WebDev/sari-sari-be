@@ -215,3 +215,22 @@ export const deleteBorrowerNote = asyncHandler(async (req, res) => {
     data: note,
   });
 });
+
+export const voidTransaction = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const { borrowerId, transactionId } = req.params;
+  const { reason } = req.body;
+
+  const result = await borrowerService.voidTransaction(
+    borrowerId,
+    transactionId,
+    userId,
+    reason,
+  );
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Transaction voided",
+    data: result,
+  });
+});
