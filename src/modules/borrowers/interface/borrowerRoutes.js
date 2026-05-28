@@ -4,6 +4,7 @@ import {
   getBorrowers,
   getBorrowerTransactions,
   uploadBorrowerProfileImage,
+  updateBorrower,
   // updatePublicAccess,
   updatePublicLoanAccess,
   archiveBorrower,
@@ -87,4 +88,8 @@ router.delete(
   requireUser,
   deleteBorrowerNote,
 );
+
+// Must be last — /:id would match more specific paths above
+router.patch("/:id", authMiddleware, requireUser, updateBorrower);
+
 export default router;

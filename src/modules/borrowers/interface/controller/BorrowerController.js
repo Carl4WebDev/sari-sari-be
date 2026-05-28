@@ -19,6 +19,23 @@ export const createBorrower = asyncHandler(async (req, res) => {
   });
 });
 
+export const updateBorrower = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const borrowerId = req.params.id;
+
+  const result = await borrowerService.updateBorrower(
+    borrowerId,
+    req.body,
+    userId,
+  );
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Borrower updated",
+    data: result,
+  });
+});
+
 export const getBorrowers = asyncHandler(async (req, res) => {
   const userId = req.user.id;
 

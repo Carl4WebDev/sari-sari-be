@@ -24,6 +24,34 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     return result.rows[0];
   }
 
+  async update(borrowerId, userId, data) {
+    const result = await db.query(
+      `
+      UPDATE borrowers
+      SET first_name = $1,
+          middle_name = $2,
+          last_name = $3,
+          dob = $4,
+          contact_number = $5,
+          updated_at = NOW()
+      WHERE borrower_id = $6
+        AND user_id = $7
+      RETURNING *
+      `,
+      [
+        data.first_name,
+        data.middle_name || null,
+        data.last_name,
+        data.dob || null,
+        data.contact_number || null,
+        borrowerId,
+        userId,
+      ],
+    );
+
+    return result.rows[0];
+  }
+
   async archiveBorrower(borrowerId, userId) {
     const result = await db.query(
       `

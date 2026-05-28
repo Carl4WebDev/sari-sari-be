@@ -28,6 +28,26 @@ export default class BorrowerService {
     return await this.borrowerRepo.create(borrower);
   }
 
+  async updateBorrower(borrowerId, data, userId) {
+    const validatedData = validateBorrowerInput(data);
+
+    const borrower = await this.borrowerRepo.update(borrowerId, userId, {
+      first_name: validatedData.first_name.toUpperCase(),
+      middle_name: validatedData.middle_name
+        ? validatedData.middle_name.toUpperCase()
+        : null,
+      last_name: validatedData.last_name.toUpperCase(),
+      dob: validatedData.dob,
+      contact_number: validatedData.contact_number,
+    });
+
+    if (!borrower) {
+      throw new AppError("Borrower not found", 404, "BORROWER_NOT_FOUND");
+    }
+
+    return borrower;
+  }
+
   async getBorrowers(userId) {
     const borrowers = await this.borrowerRepo.findAllByUserId(userId);
 
