@@ -1,16 +1,60 @@
 import { sendSuccess } from "../../../../core/http/apiResponse.js";
 import { asyncHandler } from "../../../../core/middleware/asyncHandler.js";
+import db from "../../../../core/database/db.js";
 
 import CollectionReminderRepo from "../../infrastructure/CollectionReminderRepo.js";
 import CollectionReminderService from "../../application/CollectionReminderService.js";
+import SmsRepo from "../../../sms/infrastructure/SmsRepo.js";
+import SmsService from "../../../sms/application/SmsService.js";
 
 const reminderRepo = new CollectionReminderRepo();
 const reminderService = new CollectionReminderService(reminderRepo);
+const smsRepo = new SmsRepo();
+const smsService = new SmsService(smsRepo);
 
 export const createReminder = asyncHandler(async (req, res) => {
   const userId = req.user.id;
 
   const result = await reminderService.createReminder(req.body, userId);
+
+  // Auto-send SMS if requested
+  if (req.body.send_sms && result.borrower_id) {
+    try {
+      const borrowerResult = await db.query(
+        `SELECT first_name, contact_number FROM borrowers WHERE borrower_id = $1 AND user_id = $2`,
+        [result.borrower_id, userId],
+      );
+      const borrower = borrowerResult.rows[0];
+
+      const userResult = await db.query(
+        `SELECT store_name FROM users WHERE user_id = $1`,
+        [userId],
+      );
+      const storeName = userResult.rows[0]?.store_name || "Store";
+
+      if (borrower?.contact_number) {
+        const dueDate = new Date(result.due_date).toLocaleDateString("en-PH", {
+          timeZone: "Asia/Manila",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+
+        await smsService.sendReminderSms({
+          userId,
+          borrowerId: result.borrower_id,
+          reminderId: result.reminder_id,
+          firstName: borrower.first_name,
+          storeName,
+          amount: result.amount_expected,
+          dueDate,
+          phoneNumber: borrower.contact_number,
+        });
+      }
+    } catch {
+      // SMS failure should not block reminder creation
+    }
+  }
 
   return sendSuccess(res, {
     statusCode: 201,

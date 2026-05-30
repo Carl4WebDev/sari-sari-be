@@ -5,8 +5,8 @@ export default class CollectionReminderRepo {
     const result = await db.query(
       `
       INSERT INTO collection_reminders
-      (user_id, borrower_id, amount_expected, due_date, note)
-      VALUES ($1, $2, $3, $4, $5)
+      (user_id, borrower_id, amount_expected, due_date, note, send_sms)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
       `,
       [
@@ -15,6 +15,7 @@ export default class CollectionReminderRepo {
         data.amount_expected,
         data.due_date,
         data.note,
+        data.send_sms || false,
       ],
     );
 
@@ -42,7 +43,8 @@ export default class CollectionReminderRepo {
       SELECT
         cr.*,
         b.first_name,
-        b.last_name
+        b.last_name,
+        b.contact_number
       FROM collection_reminders cr
       INNER JOIN borrowers b
         ON b.borrower_id = cr.borrower_id

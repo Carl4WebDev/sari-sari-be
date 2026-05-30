@@ -17,6 +17,7 @@ export default class CollectionReminderService {
       amount_expected: data.amount_expected || 0,
       due_date: data.due_date,
       note: data.note || null,
+      send_sms: data.send_sms || false,
     });
   }
 
