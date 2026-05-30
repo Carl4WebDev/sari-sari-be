@@ -2,8 +2,8 @@ import rateLimit from "express-rate-limit";
 import AppError from "../errors/AppError.js";
 
 export const loginLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 15 minutes
-  max: 100, // 10 attempts per IP per window
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 100, // 100 attempts per IP per window
   standardHeaders: true,
   legacyHeaders: false,
 

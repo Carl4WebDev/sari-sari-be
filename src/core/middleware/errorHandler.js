@@ -1,7 +1,7 @@
 // src/core/middleware/errorHandler.js
 import AppError from "../errors/AppError.js";
 
-const isDev = process.env.NODE_ENV !== "production";
+const isDev = process.env.NODE_ENV === "development";
 
 export default function errorHandler(err, req, res, next) {
   // 1. Normalize to AppError

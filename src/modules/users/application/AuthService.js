@@ -25,6 +25,8 @@ export default class AuthService {
       errors.password = "Password is required";
     } else if (password.length < 8) {
       errors.password = "Password must be at least 8 characters";
+    } else if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      errors.password = "Password must contain at least one uppercase letter, one lowercase letter, and one digit";
     }
 
     if (!normalizedStoreName) {
@@ -177,6 +179,8 @@ export default class AuthService {
       errors.new_password = "New password is required";
     } else if (newPassword.length < 8) {
       errors.new_password = "New password must be at least 8 characters";
+    } else if (!/[a-z]/.test(newPassword) || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      errors.new_password = "Password must contain at least one uppercase letter, one lowercase letter, and one digit";
     }
 
     if (Object.keys(errors).length > 0) {

@@ -2,6 +2,7 @@ import express from "express";
 import {
   register,
   login,
+  logout,
   getProfile,
   updateStoreName,
   changePassword,
@@ -15,6 +16,7 @@ import { requireUser } from "../../../core/middleware/requireUser.js";
 
 router.post("/register", register);
 router.post("/login", loginRateLimiter, login);
+router.post("/logout", logout);
 
 router.get("/profile", authMiddleware, requireUser, getProfile);
 router.patch(

@@ -17,13 +17,37 @@ export const register = asyncHandler(async (req, res) => {
   });
 });
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export const login = asyncHandler(async (req, res) => {
   const result = await authService.login(req.body);
+
+  res.cookie("token", result.token, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: "/",
+  });
 
   return sendSuccess(res, {
     statusCode: 200,
     message: "Login successful",
-    data: result,
+    data: { user: result.user },
+  });
+});
+
+export const logout = asyncHandler(async (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+  });
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Logged out",
   });
 });
 

@@ -13,9 +13,7 @@ router.get("/health", async (req, res) => {
 
     res.status(200).json({
       status: "ok",
-      uptime: process.uptime(),
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || "development",
     });
   } catch (error) {
     res.status(503).json({

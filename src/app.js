@@ -2,6 +2,8 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import compression from "compression";
+import cookieParser from "cookie-parser";
+import authMiddleware from "./core/middleware/Auth.js";
 
 import userRoutes from "./modules/users/interface/userRoutes.js";
 import errorHandler from "./core/middleware/errorHandler.js";
@@ -31,7 +33,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow mobile apps, Postman, server-to-server
+      // Allow non-browser clients (curl, health checks, same-origin)
       if (!origin) {
         return callback(null, true);
       }
@@ -48,8 +50,11 @@ app.use(
 );
 app.use(compression());
 app.use(express.json());
+app.use(cookieParser());
 
-app.use("/uploads", express.static("uploads"));
+// Profile images are public (for borrower status pages); other uploads require auth
+app.use("/uploads/borrowers", express.static("uploads/borrowers"));
+app.use("/uploads", authMiddleware, express.static("uploads"));
 
 app.use(healthRoute);
 app.use("/api/users", userRoutes);

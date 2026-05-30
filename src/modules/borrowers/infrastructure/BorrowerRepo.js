@@ -341,10 +341,7 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     let token = null;
 
     if (enabled) {
-      token =
-        crypto.randomBytes(32).toString("base64url") +
-        String(userId) +
-        String(borrowerId);
+      token = crypto.randomBytes(32).toString("base64url");
     }
 
     const result = await db.query(
