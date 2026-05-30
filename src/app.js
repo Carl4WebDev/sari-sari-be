@@ -24,6 +24,7 @@ import pushRoutes from "./modules/push/interface/pushRoutes.js";
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", 1);
 export default app;
 
 // 🔥 CORS goes here
