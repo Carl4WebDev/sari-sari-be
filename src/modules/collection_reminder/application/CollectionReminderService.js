@@ -25,6 +25,9 @@ export default class CollectionReminderService {
   }
 
   async getDashboardReminders(userId) {
+    // Auto-escalate PENDING reminders with past due dates to OVERDUE
+    await this.repo.escalateOverdue(userId);
+
     const reminders = await this.repo.findDashboardReminders(userId);
 
     const today = new Date().toLocaleDateString("en-CA", {
@@ -36,25 +39,28 @@ export default class CollectionReminderService {
         (r) =>
           new Date(r.due_date).toLocaleDateString("en-CA", {
             timeZone: "Asia/Manila",
-          }) === today,
+          }) === today &&
+          r.status === "PENDING",
       ),
       overdue: reminders.filter(
         (r) =>
           new Date(r.due_date).toLocaleDateString("en-CA", {
             timeZone: "Asia/Manila",
-          }) < today,
+          }) < today ||
+          r.status === "OVERDUE",
       ),
       upcoming: reminders.filter(
         (r) =>
           new Date(r.due_date).toLocaleDateString("en-CA", {
             timeZone: "Asia/Manila",
-          }) > today,
+          }) > today &&
+          r.status === "PENDING",
       ),
     };
   }
 
   async updateReminderStatus(reminderId, userId, status) {
-    if (!["PENDING", "DONE", "CANCELLED"].includes(status)) {
+    if (!["PENDING", "DONE", "CANCELLED", "OVERDUE"].includes(status)) {
       throw new ValidationError("Invalid reminder status");
     }
 
@@ -65,6 +71,25 @@ export default class CollectionReminderService {
     }
 
     return reminder;
+  }
+
+  async recreateReminder(reminderId, userId) {
+    const original = await this.repo.findById(reminderId, userId);
+
+    if (!original) {
+      throw new AppError("Reminder not found", 404, "REMINDER_NOT_FOUND");
+    }
+
+    const newDueDate = new Date();
+    newDueDate.setDate(newDueDate.getDate() + 3);
+
+    return await this.repo.create({
+      user_id: userId,
+      borrower_id: original.borrower_id,
+      amount_expected: original.amount_expected,
+      due_date: newDueDate.toISOString().split("T")[0],
+      note: original.note,
+    });
   }
 
   async deleteReminder(reminderId, userId) {

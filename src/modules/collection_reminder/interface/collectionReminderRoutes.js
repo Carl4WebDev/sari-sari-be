@@ -7,6 +7,7 @@ import {
   getBorrowerReminders,
   getDashboardReminders,
   updateReminderStatus,
+  remindAgain,
   deleteReminder,
 } from "./controller/CollectionReminderController.js";
 
@@ -29,6 +30,8 @@ router.patch(
   requireUser,
   updateReminderStatus,
 );
+
+router.post("/:reminderId/remind-again", authMiddleware, requireUser, remindAgain);
 
 router.delete("/:reminderId", authMiddleware, requireUser, deleteReminder);
 

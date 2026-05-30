@@ -47,13 +47,39 @@ export default class CollectionReminderRepo {
       INNER JOIN borrowers b
         ON b.borrower_id = cr.borrower_id
       WHERE cr.user_id = $1
-        AND cr.status = 'PENDING'
+        AND cr.status IN ('PENDING', 'OVERDUE')
       ORDER BY cr.due_date ASC
       `,
       [userId],
     );
 
     return result.rows;
+  }
+
+  async findById(reminderId, userId) {
+    const result = await db.query(
+      `
+      SELECT * FROM collection_reminders
+      WHERE reminder_id = $1 AND user_id = $2
+      `,
+      [reminderId, userId],
+    );
+
+    return result.rows[0];
+  }
+
+  async escalateOverdue(userId) {
+    await db.query(
+      `
+      UPDATE collection_reminders
+      SET status = 'OVERDUE',
+          updated_at = CURRENT_TIMESTAMP
+      WHERE user_id = $1
+        AND status = 'PENDING'
+        AND due_date < CURRENT_DATE
+      `,
+      [userId],
+    );
   }
 
   async updateStatus(reminderId, userId, status) {

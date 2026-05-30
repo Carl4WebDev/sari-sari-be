@@ -19,6 +19,7 @@ import publicStatusRoutes from "./modules/public_status/interface/publicStatusRo
 import dashboardRoutes from "./modules/dashboard/interface/dashboardRoutes.js";
 
 import collectionReminderRoutes from "./modules/collection_reminder/interface/collectionReminderRoutes.js";
+import pushRoutes from "./modules/push/interface/pushRoutes.js";
 
 dotenv.config();
 
@@ -65,5 +66,6 @@ app.use("/api/products", productRoutes);
 app.use("/api/public", publicStatusRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/collection-reminders", collectionReminderRoutes);
+app.use("/api/push", pushRoutes);
 
 app.use(errorHandler);

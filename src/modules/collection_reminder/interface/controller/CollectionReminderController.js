@@ -62,6 +62,19 @@ export const updateReminderStatus = asyncHandler(async (req, res) => {
   });
 });
 
+export const remindAgain = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const { reminderId } = req.params;
+
+  const result = await reminderService.recreateReminder(reminderId, userId);
+
+  return sendSuccess(res, {
+    statusCode: 201,
+    message: "Reminder recreated for 3 days from now",
+    data: result,
+  });
+});
+
 export const deleteReminder = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const { reminderId } = req.params;
