@@ -40,22 +40,19 @@ export default class CollectionReminderService {
         (r) =>
           new Date(r.due_date).toLocaleDateString("en-CA", {
             timeZone: "Asia/Manila",
-          }) === today &&
-          r.status === "PENDING",
+          }) === today && r.status === "PENDING",
       ),
       overdue: reminders.filter(
         (r) =>
           new Date(r.due_date).toLocaleDateString("en-CA", {
             timeZone: "Asia/Manila",
-          }) < today ||
-          r.status === "OVERDUE",
+          }) < today || r.status === "OVERDUE",
       ),
       upcoming: reminders.filter(
         (r) =>
           new Date(r.due_date).toLocaleDateString("en-CA", {
             timeZone: "Asia/Manila",
-          }) > today &&
-          r.status === "PENDING",
+          }) > today && r.status === "PENDING",
       ),
     };
   }
