@@ -225,4 +225,105 @@ export default class DashboardRepo {
 
     return result.rows;
   }
+
+  async getCalendarReminders(userId, startDate, endDate) {
+    const result = await db.query(
+      `
+      SELECT
+        cr.due_date::text AS due_date,
+        json_agg(
+          json_build_object(
+            'reminder_id', cr.reminder_id,
+            'borrower_id', cr.borrower_id,
+            'borrower_name', b.first_name || ' ' || b.last_name,
+            'amount_expected', cr.amount_expected,
+            'status', cr.status,
+            'note', cr.note
+          )
+          ORDER BY cr.created_at
+        ) AS reminders
+      FROM collection_reminders cr
+      INNER JOIN borrowers b
+        ON b.borrower_id = cr.borrower_id
+      WHERE cr.user_id = $1
+        AND cr.due_date >= $2
+        AND cr.due_date <= $3
+        AND cr.status IN ('PENDING', 'OVERDUE', 'DONE')
+      GROUP BY cr.due_date
+      ORDER BY cr.due_date ASC
+      `,
+      [userId, startDate, endDate],
+    );
+
+    return result.rows;
+  }
+
+  async getCollectionReminderStats(userId, startDate, endDate) {
+    const result = await db.query(
+      `
+      SELECT
+        COUNT(*) FILTER (WHERE status = 'DONE') AS done_count,
+        COUNT(*) FILTER (WHERE status = 'PENDING') AS pending_count,
+        COUNT(*) FILTER (WHERE status = 'OVERDUE') AS overdue_count,
+        COUNT(*) AS total_reminders,
+        COALESCE(SUM(amount_expected) FILTER (WHERE status IN ('PENDING', 'OVERDUE')), 0) AS total_expected,
+        COALESCE(SUM(amount_expected) FILTER (WHERE status = 'DONE'), 0) AS total_done_amount,
+        COUNT(*) FILTER (
+          WHERE status = 'DONE'
+            AND DATE(updated_at) <= due_date
+        ) AS on_time_count
+      FROM collection_reminders
+      WHERE user_id = $1
+        AND due_date >= $2
+        AND due_date <= $3
+      `,
+      [userId, startDate, endDate],
+    );
+
+    return result.rows[0];
+  }
+
+  async getCollectionPayments(userId, startDate, endDate) {
+    const result = await db.query(
+      `
+      SELECT
+        COALESCE(SUM(t.total_amount), 0) AS total_payments_collected
+      FROM transactions t
+      INNER JOIN borrowers b
+        ON b.borrower_id = t.borrower_id
+      WHERE b.user_id = $1
+        AND b.is_active = true
+        AND t.type = 'PAYMENT'
+        AND (t.voided = false OR t.voided IS NULL)
+        AND t.transaction_date >= $2
+        AND t.transaction_date <= $3
+      `,
+      [userId, startDate, endDate],
+    );
+
+    return result.rows[0];
+  }
+
+  async getCollectionTrend(userId) {
+    const result = await db.query(
+      `
+      SELECT
+        t.transaction_date::text AS date,
+        COALESCE(SUM(t.total_amount), 0) AS total
+      FROM transactions t
+      INNER JOIN borrowers b
+        ON b.borrower_id = t.borrower_id
+      WHERE b.user_id = $1
+        AND b.is_active = true
+        AND t.type = 'PAYMENT'
+        AND (t.voided = false OR t.voided IS NULL)
+        AND t.transaction_date >= CURRENT_DATE - INTERVAL '30 days'
+      GROUP BY t.transaction_date
+      ORDER BY t.transaction_date ASC
+      `,
+      [userId],
+    );
+
+    return result.rows;
+  }
 }

@@ -65,4 +65,81 @@ export default class DashboardService {
       })),
     };
   }
+
+  async getCalendarData(userId, year, month) {
+    const y = parseInt(year, 10) || new Date().getFullYear();
+    const m = parseInt(month, 10) || new Date().getMonth() + 1;
+
+    const startDate = `${y}-${String(m).padStart(2, "0")}-01`;
+    const lastDay = new Date(y, m, 0).getDate();
+    const endDate = `${y}-${String(m).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+
+    const rows = await this.dashboardRepo.getCalendarReminders(
+      userId,
+      startDate,
+      endDate,
+    );
+
+    return rows.map((row) => ({
+      due_date: row.due_date,
+      reminders: row.reminders,
+    }));
+  }
+
+  async getCollectionStats(userId, period) {
+    const now = new Date();
+    let startDate, endDate;
+
+    if (period === "month") {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+        .toISOString()
+        .split("T")[0];
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+        .toISOString()
+        .split("T")[0];
+    } else {
+      // week — Monday to Sunday
+      const day = now.getDay();
+      const diff = day === 0 ? 6 : day - 1;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - diff);
+      startDate = monday.toISOString().split("T")[0];
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      endDate = sunday.toISOString().split("T")[0];
+    }
+
+    const [reminderStats, paymentStats] = await Promise.all([
+      this.dashboardRepo.getCollectionReminderStats(userId, startDate, endDate),
+      this.dashboardRepo.getCollectionPayments(userId, startDate, endDate),
+    ]);
+
+    const doneCount = Number(reminderStats.done_count || 0);
+    const onTimeCount = Number(reminderStats.on_time_count || 0);
+
+    return {
+      total_collected: Number(paymentStats.total_payments_collected || 0),
+      total_expected: Number(reminderStats.total_expected || 0),
+      on_time_rate: doneCount > 0 ? Math.round((onTimeCount / doneCount) * 1000) / 10 : 0,
+      done_count: doneCount,
+      pending_count: Number(reminderStats.pending_count || 0),
+      overdue_count: Number(reminderStats.overdue_count || 0),
+      total_reminders: Number(reminderStats.total_reminders || 0),
+    };
+  }
+
+  async getCollectionTrend(userId) {
+    const rows = await this.dashboardRepo.getCollectionTrend(userId);
+
+    return rows.map((r) => {
+      const d = new Date(r.date + "T00:00:00");
+      return {
+        date: d.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        total: Number(r.total),
+      };
+    });
+  }
 }
