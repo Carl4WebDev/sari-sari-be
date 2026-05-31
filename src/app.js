@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import compression from "compression";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import authMiddleware from "./core/middleware/Auth.js";
 
 import userRoutes from "./modules/users/interface/userRoutes.js";
@@ -52,8 +54,18 @@ app.use(
   }),
 );
 app.use(compression());
-app.use(express.json());
+app.use(express.json({ limit: "50kb" }));
 app.use(cookieParser());
+app.use(helmet());
+
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { status: "error", message: "Too many requests. Try again later." },
+});
+app.use(globalLimiter);
 
 // Profile images are public (for borrower status pages); other uploads require auth
 app.use("/uploads/borrowers", express.static("uploads/borrowers"));
