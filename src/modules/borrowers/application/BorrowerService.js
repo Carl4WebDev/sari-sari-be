@@ -23,6 +23,7 @@ export default class BorrowerService {
       last_name: validatedData.last_name.toUpperCase(),
       dob: validatedData.dob,
       contact_number: validatedData.contact_number,
+      email: validatedData.email,
     });
 
     return await this.borrowerRepo.create(borrower);
@@ -39,6 +40,7 @@ export default class BorrowerService {
       last_name: validatedData.last_name.toUpperCase(),
       dob: validatedData.dob,
       contact_number: validatedData.contact_number,
+      email: validatedData.email,
     });
 
     if (!borrower) {

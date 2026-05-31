@@ -44,7 +44,8 @@ export default class CollectionReminderRepo {
         cr.*,
         b.first_name,
         b.last_name,
-        b.contact_number
+        b.contact_number,
+        b.email
       FROM collection_reminders cr
       INNER JOIN borrowers b
         ON b.borrower_id = cr.borrower_id

@@ -31,6 +31,7 @@ export const validateBorrowerInput = (data) => {
     last_name: sanitizeString(data.last_name),
     dob: data.dob || null,
     contact_number: sanitizeString(data.contact_number) || null,
+    email: sanitizeString(data.email) || null,
   };
 
   if (isEmpty(borrower.first_name)) {
@@ -65,6 +66,16 @@ export const validateBorrowerInput = (data) => {
 
     if (!phoneRegex.test(borrower.contact_number)) {
       errors.contact_number = "Invalid Philippine contact number";
+    }
+  }
+
+  if (!isEmpty(borrower.email)) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(borrower.email)) {
+      errors.email = "Invalid email format";
+    } else if (!hasMaxLength(borrower.email, 255)) {
+      errors.email = "Email must not exceed 255 characters";
     }
   }
 

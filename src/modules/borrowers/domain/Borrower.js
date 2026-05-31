@@ -7,6 +7,7 @@ export default class Borrower {
     last_name,
     dob,
     contact_number,
+    email,
   }) {
     this.borrower_id = borrower_id;
     this.user_id = user_id;
@@ -15,5 +16,6 @@ export default class Borrower {
     this.last_name = last_name;
     this.dob = dob;
     this.contact_number = contact_number;
+    this.email = email;
   }
 }

@@ -47,7 +47,7 @@ export default class SmsService {
     }
 
     // Build message
-    const rawMessage = `Hi ${firstName}, your balance at ${storeName} is ₱${Number(amount).toLocaleString()}. Please settle by ${dueDate}. Thank you!`;
+    const rawMessage = `Hi ${firstName}, your balance at ${storeName} is P${Number(amount).toLocaleString()}. Please settle by ${dueDate}. Thank you!`;
     const message = sanitizeMessage(rawMessage);
 
     // Check env

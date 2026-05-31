@@ -7,8 +7,8 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     const result = await db.query(
       `
       INSERT INTO borrowers
-      (user_id, first_name, middle_name, last_name, dob, contact_number)
-      VALUES ($1,$2,$3,$4,$5,$6)
+      (user_id, first_name, middle_name, last_name, dob, contact_number, email)
+      VALUES ($1,$2,$3,$4,$5,$6,$7)
       RETURNING *
       `,
       [
@@ -18,6 +18,7 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
         borrower.last_name,
         borrower.dob,
         borrower.contact_number,
+        borrower.email,
       ],
     );
 
@@ -33,9 +34,10 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
           last_name = $3,
           dob = $4,
           contact_number = $5,
+          email = $6,
           updated_at = NOW()
-      WHERE borrower_id = $6
-        AND user_id = $7
+      WHERE borrower_id = $7
+        AND user_id = $8
       RETURNING *
       `,
       [
@@ -44,6 +46,7 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
         data.last_name,
         data.dob || null,
         data.contact_number || null,
+        data.email || null,
         borrowerId,
         userId,
       ],
@@ -96,6 +99,7 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
       b.last_name,
       b.dob,
       b.contact_number,
+      b.email,
       b.public_token,
       b.token_enabled,
       b.is_active,
@@ -155,6 +159,7 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
       b.last_name,
       b.dob,
       b.contact_number,
+      b.email,
       b.public_token,
       b.token_enabled,
       b.is_active,
@@ -261,6 +266,7 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
       last_name,
       dob,
       contact_number,
+      email,
       created_at
     FROM borrowers
     WHERE borrower_id = $1
