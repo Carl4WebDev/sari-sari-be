@@ -13,6 +13,11 @@ export default class LoanService {
       throw new Error("Borrower is required");
     }
 
+    // Reject IDs that overflow PostgreSQL integer (max 2,147,483,647)
+    if (borrower_id > 2147483647 || borrower_id < 0) {
+      throw new AppError("Invalid borrower ID", 400, "INVALID_BORROWER_ID");
+    }
+
     const borrower = await this.borrowerRepo.findByIdAndUserId(
       borrower_id,
       userId,
