@@ -7,10 +7,17 @@ export default class LoanService {
   }
 
   async createLoan(data, userId) {
-    const { borrower_id, items } = data;
+    const { borrower_id: rawBorrowerId, items } = data;
 
-    if (!borrower_id) {
+    if (!rawBorrowerId) {
       throw new Error("Borrower is required");
+    }
+
+    // Coerce to number — handles string values from offline queue replay
+    const borrower_id = Number(rawBorrowerId);
+
+    if (!Number.isFinite(borrower_id) || !Number.isInteger(borrower_id)) {
+      throw new AppError("Invalid borrower ID", 400, "INVALID_BORROWER_ID");
     }
 
     // Reject IDs that overflow PostgreSQL integer (max 2,147,483,647)
@@ -45,9 +52,14 @@ export default class LoanService {
       if (typeof i.price !== "number" || i.price < 0) {
         throw new AppError("Price must be a non-negative number", 400);
       }
+      // Coerce and reject product_id values that overflow PostgreSQL integer
+      const product_id = i.product_id != null ? Number(i.product_id) : null;
+      if (product_id != null && (!Number.isFinite(product_id) || !Number.isInteger(product_id) || product_id > 2147483647 || product_id < 0)) {
+        throw new AppError("Invalid product ID", 400, "INVALID_PRODUCT_ID");
+      }
       return {
         product_name: i.product_name,
-        product_id: i.product_id || null,
+        product_id: product_id || null,
         quantity: i.quantity,
         price: i.price,
         subtotal: i.quantity * i.price,

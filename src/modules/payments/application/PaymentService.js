@@ -16,6 +16,17 @@ export default class PaymentService {
       throw new AppError("Borrower is required", 400);
     }
 
+    // Coerce to number — handles string values from offline queue replay
+    data.borrower_id = Number(data.borrower_id);
+
+    if (!Number.isFinite(data.borrower_id) || !Number.isInteger(data.borrower_id)) {
+      throw new AppError("Invalid borrower ID", 400, "INVALID_BORROWER_ID");
+    }
+
+    if (data.borrower_id > 2147483647 || data.borrower_id < 0) {
+      throw new AppError("Invalid borrower ID", 400, "INVALID_BORROWER_ID");
+    }
+
     if (data.note && typeof data.note === "string" && data.note.length > 1000) {
       throw new AppError("Note must not exceed 1000 characters", 400);
     }
