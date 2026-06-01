@@ -1,6 +1,7 @@
 export default class DashboardService {
-  constructor(dashboardRepo) {
+  constructor(dashboardRepo, expenseRepo) {
     this.dashboardRepo = dashboardRepo;
+    this.expenseRepo = expenseRepo;
   }
 
   async getDashboard(userId) {
@@ -125,6 +126,41 @@ export default class DashboardService {
       pending_count: Number(reminderStats.pending_count || 0),
       overdue_count: Number(reminderStats.overdue_count || 0),
       total_reminders: Number(reminderStats.total_reminders || 0),
+    };
+  }
+
+  async getIncomeSummary(userId, period = "month") {
+    const now = new Date();
+    let startDate, endDate;
+
+    if (period === "month") {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split("T")[0];
+    } else {
+      const day = now.getDay();
+      const diff = day === 0 ? 6 : day - 1;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - diff);
+      startDate = monday.toISOString().split("T")[0];
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      endDate = sunday.toISOString().split("T")[0];
+    }
+
+    const [incomeTotal, incomeByMethod, expenseTotal, expensesByCategory] = await Promise.all([
+      this.dashboardRepo.getIncomeByPeriod(userId, startDate, endDate),
+      this.dashboardRepo.getIncomeByMethod(userId, startDate, endDate),
+      this.expenseRepo.getTotalByPeriod(userId, startDate, endDate),
+      this.expenseRepo.getTotalByCategory(userId, startDate, endDate),
+    ]);
+
+    return {
+      income: { total: incomeTotal, by_method: incomeByMethod },
+      expenses: { total: expenseTotal, by_category: expensesByCategory },
+      profit: incomeTotal - expenseTotal,
+      period,
+      start_date: startDate,
+      end_date: endDate,
     };
   }
 

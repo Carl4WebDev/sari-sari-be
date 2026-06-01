@@ -23,6 +23,7 @@ import dashboardRoutes from "./modules/dashboard/interface/dashboardRoutes.js";
 import collectionReminderRoutes from "./modules/collection_reminder/interface/collectionReminderRoutes.js";
 import pushRoutes from "./modules/push/interface/pushRoutes.js";
 import smsRoutes from "./modules/sms/interface/smsRoutes.js";
+import expenseRoutes from "./modules/expenses/interface/expenseRoutes.js";
 
 dotenv.config();
 
@@ -82,5 +83,6 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/collection-reminders", collectionReminderRoutes);
 app.use("/api/push", pushRoutes);
 app.use("/api/sms", smsRoutes);
+app.use("/api/expenses", expenseRoutes);
 
 app.use(errorHandler);

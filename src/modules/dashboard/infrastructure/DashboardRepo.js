@@ -304,6 +304,48 @@ export default class DashboardRepo {
     return result.rows[0];
   }
 
+  async getIncomeByPeriod(userId, startDate, endDate) {
+    const result = await db.query(
+      `
+      SELECT
+        COALESCE(SUM(t.total_amount), 0) AS total_income
+      FROM transactions t
+      INNER JOIN borrowers b ON b.borrower_id = t.borrower_id
+      WHERE b.user_id = $1
+        AND b.is_active = true
+        AND t.type = 'PAYMENT'
+        AND (t.voided = false OR t.voided IS NULL)
+        AND t.transaction_date >= $2
+        AND t.transaction_date <= $3
+      `,
+      [userId, startDate, endDate],
+    );
+    return Number(result.rows[0].total_income);
+  }
+
+  async getIncomeByMethod(userId, startDate, endDate) {
+    const result = await db.query(
+      `
+      SELECT
+        pd.payment_method,
+        COALESCE(SUM(t.total_amount), 0) AS total
+      FROM transactions t
+      INNER JOIN borrowers b ON b.borrower_id = t.borrower_id
+      INNER JOIN payment_details pd ON pd.transaction_id = t.transaction_id
+      WHERE b.user_id = $1
+        AND b.is_active = true
+        AND t.type = 'PAYMENT'
+        AND (t.voided = false OR t.voided IS NULL)
+        AND t.transaction_date >= $2
+        AND t.transaction_date <= $3
+      GROUP BY pd.payment_method
+      ORDER BY total DESC
+      `,
+      [userId, startDate, endDate],
+    );
+    return result.rows.map((r) => ({ method: r.payment_method, total: Number(r.total) }));
+  }
+
   async getCollectionTrend(userId) {
     const result = await db.query(
       `

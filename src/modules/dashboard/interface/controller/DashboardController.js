@@ -3,9 +3,11 @@ import { asyncHandler } from "../../../../core/middleware/asyncHandler.js";
 
 import DashboardRepo from "../../infrastructure/DashboardRepo.js";
 import DashboardService from "../../application/DashboardService.js";
+import ExpenseRepo from "../../../expenses/infrastructure/ExpenseRepo.js";
 
 const dashboardRepo = new DashboardRepo();
-const dashboardService = new DashboardService(dashboardRepo);
+const expenseRepo = new ExpenseRepo();
+const dashboardService = new DashboardService(dashboardRepo, expenseRepo);
 
 export const getDashboard = asyncHandler(async (req, res) => {
   const userId = req.user.id;
@@ -56,6 +58,19 @@ export const getCollectionTrend = asyncHandler(async (req, res) => {
   return sendSuccess(res, {
     statusCode: 200,
     message: "Collection trend fetched",
+    data: result,
+  });
+});
+
+export const getIncomeSummary = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const period = req.query.period || "month";
+
+  const result = await dashboardService.getIncomeSummary(userId, period);
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Income summary fetched",
     data: result,
   });
 });
