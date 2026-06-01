@@ -19,7 +19,9 @@ export default class ProductRepo {
     return result.rows[0];
   }
 
-  async findAllByUserId(userId) {
+  async findAllByUserId(userId, { limit, offset } = {}) {
+    const hasPaging = limit != null;
+
     const result = await db.query(
       `
       SELECT
@@ -34,11 +36,20 @@ export default class ProductRepo {
       WHERE user_id = $1
       AND is_active = TRUE
       ORDER BY product_name ASC
+      ${hasPaging ? `LIMIT $2 OFFSET $3` : ""}
       `,
-      [userId],
+      hasPaging ? [userId, limit, offset] : [userId],
     );
 
     return result.rows;
+  }
+
+  async countByUserId(userId) {
+    const result = await db.query(
+      `SELECT COUNT(*) AS count FROM product_master WHERE user_id = $1 AND is_active = TRUE`,
+      [userId],
+    );
+    return parseInt(result.rows[0].count, 10);
   }
 
   async findByIdAndUserId(productId, userId) {

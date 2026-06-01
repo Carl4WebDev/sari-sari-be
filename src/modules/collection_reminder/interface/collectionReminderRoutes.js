@@ -13,14 +13,20 @@ import {
 
 const router = express.Router();
 
+const cache10s = (_req, res, next) => {
+  res.set("Cache-Control", "private, max-age=10");
+  next();
+};
+
 router.post("/", authMiddleware, requireUser, createReminder);
 
-router.get("/dashboard", authMiddleware, requireUser, getDashboardReminders);
+router.get("/dashboard", authMiddleware, requireUser, cache10s, getDashboardReminders);
 
 router.get(
   "/borrower/:borrowerId",
   authMiddleware,
   requireUser,
+  cache10s,
   getBorrowerReminders,
 );
 

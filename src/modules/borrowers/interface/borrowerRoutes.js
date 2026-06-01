@@ -24,9 +24,15 @@ import { uploadBorrowerProfile } from "../../../core/middleware/uploadMiddleware
 
 const router = express.Router();
 
+// Short-lived cache for list endpoints — prevents redundant hits during navigation
+const cache30s = (_req, res, next) => {
+  res.set("Cache-Control", "private, max-age=30");
+  next();
+};
+
 router.post("/", authMiddleware, requireUser, createBorrower);
 
-router.get("/", authMiddleware, requireUser, getBorrowers);
+router.get("/", authMiddleware, requireUser, cache30s, getBorrowers);
 router.get(
   "/:id/transactions",
   authMiddleware,
@@ -58,7 +64,7 @@ router.patch(
 
 router.patch("/:id/archive", authMiddleware, requireUser, archiveBorrower);
 
-router.get("/archived", authMiddleware, requireUser, getArchivedBorrowers);
+router.get("/archived", authMiddleware, requireUser, cache30s, getArchivedBorrowers);
 
 router.patch(
   "/:id/reactivate",

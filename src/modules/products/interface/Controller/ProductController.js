@@ -21,13 +21,18 @@ export const createProduct = asyncHandler(async (req, res) => {
 
 export const getProducts = asyncHandler(async (req, res) => {
   const userId = req.user.id;
+  const page = req.query.page ? parseInt(req.query.page, 10) : undefined;
+  const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
 
-  const products = await productService.getProducts(userId);
+  const result = await productService.getProducts(userId, { page, limit });
 
   return sendSuccess(res, {
     statusCode: 200,
     message: "Products fetched",
-    data: products,
+    data: result.data,
+    total: result.total,
+    page: page || 1,
+    limit: limit || result.total,
   });
 });
 

@@ -30,13 +30,28 @@ export default class ProductService {
     });
   }
 
-  async getProducts(userId) {
-    const products = await this.productRepo.findAllByUserId(userId);
+  async getProducts(userId, { page, limit } = {}) {
+    let products;
+    let total;
 
-    return products.map((product) => ({
-      ...product,
-      product_name: product.product_name.toUpperCase(),
-    }));
+    if (page && limit) {
+      const offset = (page - 1) * limit;
+      [products, total] = await Promise.all([
+        this.productRepo.findAllByUserId(userId, { limit, offset }),
+        this.productRepo.countByUserId(userId),
+      ]);
+    } else {
+      products = await this.productRepo.findAllByUserId(userId);
+      total = products.length;
+    }
+
+    return {
+      data: products.map((product) => ({
+        ...product,
+        product_name: product.product_name.toUpperCase(),
+      })),
+      total,
+    };
   }
 
   async updateProduct(productId, data, userId) {

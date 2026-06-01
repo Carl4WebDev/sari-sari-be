@@ -50,18 +50,33 @@ export default class BorrowerService {
     return borrower;
   }
 
-  async getBorrowers(userId) {
-    const borrowers = await this.borrowerRepo.findAllByUserId(userId);
+  async getBorrowers(userId, { page, limit } = {}) {
+    let borrowers;
+    let total;
 
-    if (!borrowers.length) return [];
+    if (page && limit) {
+      const offset = (page - 1) * limit;
+      [borrowers, total] = await Promise.all([
+        this.borrowerRepo.findAllByUserId(userId, { limit, offset }),
+        this.borrowerRepo.countByUserId(userId),
+      ]);
+    } else {
+      borrowers = await this.borrowerRepo.findAllByUserId(userId);
+      total = borrowers.length;
+    }
 
-    return borrowers.map((b) => ({
-      ...b,
-      first_name: b.first_name?.toUpperCase(),
-      middle_name: b.middle_name?.toUpperCase(),
-      last_name: b.last_name?.toUpperCase(),
-      total_loan: b.balance,
-    }));
+    if (!borrowers.length) return { data: [], total: 0 };
+
+    return {
+      data: borrowers.map((b) => ({
+        ...b,
+        first_name: b.first_name?.toUpperCase(),
+        middle_name: b.middle_name?.toUpperCase(),
+        last_name: b.last_name?.toUpperCase(),
+        total_loan: b.balance,
+      })),
+      total,
+    };
   }
 
   async getBorrowerTransactions(borrowerId, userId) {
@@ -194,7 +209,11 @@ export default class BorrowerService {
     return borrower;
   }
 
-  async getArchivedBorrowers(userId) {
+  async getArchivedBorrowers(userId, { page, limit } = {}) {
+    if (page && limit) {
+      const offset = (page - 1) * limit;
+      return await this.borrowerRepo.findArchivedByUserId(userId, { limit, offset });
+    }
     return await this.borrowerRepo.findArchivedByUserId(userId);
   }
 

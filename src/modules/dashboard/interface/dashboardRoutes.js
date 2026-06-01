@@ -12,9 +12,14 @@ import {
 
 const router = express.Router();
 
-router.get("/", authMiddleware, requireUser, getDashboard);
-router.get("/calendar", authMiddleware, requireUser, getCalendarData);
-router.get("/stats", authMiddleware, requireUser, getCollectionStats);
-router.get("/trend", authMiddleware, requireUser, getCollectionTrend);
+const cache10s = (_req, res, next) => {
+  res.set("Cache-Control", "private, max-age=10");
+  next();
+};
+
+router.get("/", authMiddleware, requireUser, cache10s, getDashboard);
+router.get("/calendar", authMiddleware, requireUser, cache10s, getCalendarData);
+router.get("/stats", authMiddleware, requireUser, cache10s, getCollectionStats);
+router.get("/trend", authMiddleware, requireUser, cache10s, getCollectionTrend);
 
 export default router;

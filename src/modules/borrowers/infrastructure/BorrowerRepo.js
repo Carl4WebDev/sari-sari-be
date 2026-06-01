@@ -88,7 +88,9 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
 
     return result.rows[0];
   }
-  async findArchivedByUserId(userId) {
+  async findArchivedByUserId(userId, { limit, offset } = {}) {
+    const hasPaging = limit != null;
+
     const result = await db.query(
       `
     SELECT
@@ -124,8 +126,9 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     GROUP BY b.borrower_id
 
     ORDER BY b.first_name ASC, b.last_name ASC
+    ${hasPaging ? `LIMIT $2 OFFSET $3` : ""}
     `,
-      [userId],
+      hasPaging ? [userId, limit, offset] : [userId],
     );
 
     return result.rows.map((row) => ({
@@ -148,7 +151,9 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     return result.rows[0];
   }
 
-  async findAllByUserId(userId) {
+  async findAllByUserId(userId, { limit, offset } = {}) {
+    const hasPaging = limit != null;
+
     const result = await db.query(
       `
     SELECT
@@ -184,14 +189,23 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     GROUP BY b.borrower_id
 
     ORDER BY b.first_name ASC, b.last_name ASC
+    ${hasPaging ? `LIMIT $2 OFFSET $3` : ""}
     `,
-      [userId],
+      hasPaging ? [userId, limit, offset] : [userId],
     );
 
     return result.rows.map((row) => ({
       ...row,
       balance: Number(row.balance),
     }));
+  }
+
+  async countByUserId(userId) {
+    const result = await db.query(
+      `SELECT COUNT(*) AS count FROM borrowers WHERE user_id = $1 AND is_active = true`,
+      [userId],
+    );
+    return parseInt(result.rows[0].count, 10);
   }
 
   // async updatePublicAccess(borrowerId, enabled, userId) {
@@ -391,7 +405,9 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     return result.rows[0];
   }
 
-  async getNotesByBorrowerId(borrowerId) {
+  async getNotesByBorrowerId(borrowerId, { limit, offset } = {}) {
+    const hasPaging = limit != null;
+
     const result = await db.query(
       `
     SELECT
@@ -402,8 +418,9 @@ export default class BorrowerRepoImpl extends IBorrowerRepo {
     FROM borrower_notes
     WHERE borrower_id = $1
     ORDER BY created_at DESC
+    ${hasPaging ? `LIMIT $2 OFFSET $3` : ""}
     `,
-      [borrowerId],
+      hasPaging ? [borrowerId, limit, offset] : [borrowerId],
     );
 
     return result.rows;

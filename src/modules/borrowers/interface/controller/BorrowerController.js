@@ -38,13 +38,18 @@ export const updateBorrower = asyncHandler(async (req, res) => {
 
 export const getBorrowers = asyncHandler(async (req, res) => {
   const userId = req.user.id;
+  const page = req.query.page ? parseInt(req.query.page, 10) : undefined;
+  const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
 
-  const borrowers = await borrowerService.getBorrowers(userId);
+  const result = await borrowerService.getBorrowers(userId, { page, limit });
 
   return sendSuccess(res, {
     statusCode: 200,
     message: "Borrowers fetched",
-    data: borrowers,
+    data: result.data,
+    total: result.total,
+    page: page || 1,
+    limit: limit || result.total,
   });
 });
 
