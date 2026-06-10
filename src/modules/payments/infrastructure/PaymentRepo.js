@@ -7,7 +7,28 @@ export default class PaymentRepo {
     try {
       await client.query("BEGIN");
 
-      // 1️⃣ Insert transaction
+      // 1️⃣ Lock rows first (FOR UPDATE), then aggregate in app
+      const lockQuery = `
+        SELECT type, total_amount
+        FROM transactions
+        WHERE borrower_id = $1
+          AND (voided = false OR voided IS NULL)
+        FOR UPDATE
+      `;
+
+      const lockedRows = await client.query(lockQuery, [payment.borrower_id]);
+
+      const balance = lockedRows.rows.reduce((sum, row) => {
+        if (row.type === "LOAN") return sum + Number(row.total_amount);
+        if (row.type === "PAYMENT") return sum - Number(row.total_amount);
+        return sum;
+      }, 0);
+
+      if (payment.amount > balance) {
+        throw new Error("BALANCE_EXCEEDED");
+      }
+
+      // 2️⃣ Insert transaction
       const transactionQuery = `
         INSERT INTO transactions
         (borrower_id, type, transaction_date, total_amount, user_id)
@@ -23,7 +44,7 @@ export default class PaymentRepo {
 
       const transactionId = transactionResult.rows[0].transaction_id;
 
-      // 2️⃣ Insert payment details
+      // 3️⃣ Insert payment details
       const detailsQuery = `
         INSERT INTO payment_details
         (transaction_id, payment_method, note)

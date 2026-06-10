@@ -1,3 +1,4 @@
+import AppError from "../../../../core/errors/AppError.js";
 import { sendSuccess } from "../../../../core/http/apiResponse.js";
 import { asyncHandler } from "../../../../core/middleware/asyncHandler.js";
 
@@ -74,7 +75,7 @@ export const uploadBorrowerProfileImage = asyncHandler(async (req, res) => {
   const borrowerId = req.params.borrowerId;
 
   if (!req.file) {
-    throw new Error("Profile image is required");
+    throw new AppError("Profile image is required", 400);
   }
 
   const imageUrl = `/uploads/borrowers/${req.file.filename}`;

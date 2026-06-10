@@ -24,9 +24,6 @@ export default class ProductService {
       user_id: userId,
       product_name: validatedData.product_name.toUpperCase(),
       product_price: validatedData.product_price,
-      quantity: validatedData.quantity,
-      category: validatedData.category,
-      unit: validatedData.unit,
     });
   }
 

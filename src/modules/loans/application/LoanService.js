@@ -10,7 +10,7 @@ export default class LoanService {
     const { borrower_id: rawBorrowerId, items } = data;
 
     if (!rawBorrowerId) {
-      throw new Error("Borrower is required");
+      throw new AppError("Borrower is required", 400);
     }
 
     // Coerce to number — handles string values from offline queue replay
@@ -35,7 +35,7 @@ export default class LoanService {
     }
 
     if (!items || items.length === 0) {
-      throw new Error("Loan must contain items");
+      throw new AppError("Loan must contain items", 400);
     }
 
     if (items.length > 100) {

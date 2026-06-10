@@ -55,47 +55,63 @@ export default class SmsService {
       throw new AppError("SMS service not configured", 500, "SMS_NOT_CONFIGURED");
     }
 
-    // Send via Semaphore
-    let smsStatus = "Failed";
+    // Send via Semaphore API
+    let smsStatus = "Sent";
     let semaphoreMessageId = null;
 
     try {
-      const params = new URLSearchParams({
-        apikey: env.semaphoreApiKey,
-        number: normalizedPhone,
-        message: message,
-        sendername: env.semaphoreSenderName,
-      });
-
       const response = await fetch(SEMAPHORE_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          apikey: env.semaphoreApiKey,
+          number: normalizedPhone,
+          message: message,
+        }),
       });
 
-      const data = await response.json();
-
-      if (Array.isArray(data) && data.length > 0) {
-        smsStatus = data[0].status || "Sent";
-        semaphoreMessageId = data[0].message_id || null;
-      } else if (data.error) {
+      // Check for non-OK responses before parsing JSON
+      if (!response.ok) {
+        let errorText;
+        try {
+          errorText = await response.text();
+        } catch {
+          errorText = `HTTP ${response.status}`;
+        }
+        console.error(`[SMS] Semaphore API error: ${response.status} - ${errorText}`);
         smsStatus = "Failed";
+      } else {
+        // Parse JSON response
+        const data = await response.json();
+        if (data && data.length > 0 && data[0].message_id) {
+          semaphoreMessageId = data[0].message_id;
+        } else {
+          smsStatus = "Failed";
+          console.error("[SMS] Semaphore API returned unexpected response:", data);
+        }
       }
-    } catch {
+    } catch (err) {
       smsStatus = "Failed";
+      console.error("[SMS] Semaphore API request failed:", err.message);
     }
 
-    // Log the SMS attempt
-    await this.smsRepo.logSms({
-      user_id: userId,
-      borrower_id: borrowerId,
-      reminder_id: reminderId,
-      recipient_number: normalizedPhone,
-      message: message,
-      status: smsStatus,
-      semaphore_message_id: semaphoreMessageId,
-    });
+    // Log to DB (never let logging failure block the response)
+    try {
+      await this.smsRepo.logSms({
+        userId,
+        borrowerId,
+        reminderId,
+        recipientNumber: normalizedPhone,
+        message,
+        status: smsStatus,
+        semaphoreMessageId,
+      });
+    } catch (logErr) {
+      console.error("[SMS] Failed to log SMS to database:", logErr.message);
+    }
 
-    return { status: smsStatus, message };
+    return { status: smsStatus, recipientNumber: normalizedPhone };
   }
 }

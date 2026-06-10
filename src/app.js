@@ -9,6 +9,7 @@ import authMiddleware from "./core/middleware/Auth.js";
 
 import userRoutes from "./modules/users/interface/userRoutes.js";
 import errorHandler from "./core/middleware/errorHandler.js";
+import notFoundHandler from "./core/middleware/notFoundHandler.js";
 import healthRoute from "./core/http/healthRoutes.js";
 import borrowerRoutes from "./modules/borrowers/interface/borrowerRoutes.js";
 import loanRoutes from "./modules/loans/interface/loanRoutes.js";
@@ -84,5 +85,8 @@ app.use("/api/collection-reminders", collectionReminderRoutes);
 app.use("/api/push", pushRoutes);
 app.use("/api/sms", smsRoutes);
 app.use("/api/expenses", expenseRoutes);
+
+// 404 for undefined routes — must come after all route mounts
+app.use(notFoundHandler);
 
 app.use(errorHandler);

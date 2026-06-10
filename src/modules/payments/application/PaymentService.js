@@ -16,14 +16,13 @@ export default class PaymentService {
       throw new AppError("Borrower is required", 400);
     }
 
-    // Coerce to number — handles string values from offline queue replay
-    data.borrower_id = Number(data.borrower_id);
+    const borrowerId = Number(data.borrower_id);
 
-    if (!Number.isFinite(data.borrower_id) || !Number.isInteger(data.borrower_id)) {
+    if (!Number.isFinite(borrowerId) || !Number.isInteger(borrowerId)) {
       throw new AppError("Invalid borrower ID", 400, "INVALID_BORROWER_ID");
     }
 
-    if (data.borrower_id > 2147483647 || data.borrower_id < 0) {
+    if (borrowerId > 2147483647 || borrowerId < 0) {
       throw new AppError("Invalid borrower ID", 400, "INVALID_BORROWER_ID");
     }
 
@@ -37,7 +36,7 @@ export default class PaymentService {
     }
 
     const borrower = await this.borrowerRepo.findByIdAndUserId(
-      data.borrower_id,
+      borrowerId,
       userId,
     );
 
@@ -45,22 +44,21 @@ export default class PaymentService {
       throw new AppError("Borrower not found", 404, "BORROWER_NOT_FOUND");
     }
 
-    const balance = await this.borrowerRepo.getBorrowerBalance(
-      data.borrower_id,
-    );
-
-    if (data.amount > balance) {
-      throw new AppError("Payment exceeds remaining balance", 400);
-    }
-
     const payment = new Payment({
-      borrower_id: data.borrower_id,
+      borrower_id: borrowerId,
       amount: data.amount,
       payment_type: data.payment_type,
       note: data.note,
       user_id: userId,
     });
 
-    return await this.paymentRepo.create(payment);
+    try {
+      return await this.paymentRepo.create(payment);
+    } catch (err) {
+      if (err.message === "BALANCE_EXCEEDED") {
+        throw new AppError("Payment exceeds remaining balance", 400);
+      }
+      throw err;
+    }
   }
 }

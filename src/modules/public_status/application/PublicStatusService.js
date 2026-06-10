@@ -22,6 +22,7 @@ export default class PublicStatusService {
       );
 
     const totalBalance = transactions.reduce((sum, transaction) => {
+      if (transaction.voided) return sum;
       if (transaction.type === "LOAN") return sum + Number(transaction.amount);
       if (transaction.type === "PAYMENT")
         return sum - Number(transaction.amount);
@@ -29,7 +30,7 @@ export default class PublicStatusService {
     }, 0);
 
     const lastPayment = transactions.find(
-      (transaction) => transaction.type === "PAYMENT",
+      (transaction) => transaction.type === "PAYMENT" && !transaction.voided,
     );
 
     return {
