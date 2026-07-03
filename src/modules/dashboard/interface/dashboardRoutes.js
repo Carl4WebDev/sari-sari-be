@@ -9,6 +9,7 @@ import {
   getCollectionStats,
   getCollectionTrend,
   getIncomeSummary,
+  getToday,
 } from "./controller/DashboardController.js";
 
 const router = express.Router();
@@ -23,5 +24,6 @@ router.get("/calendar", authMiddleware, requireUser, cache10s, getCalendarData);
 router.get("/stats", authMiddleware, requireUser, cache10s, getCollectionStats);
 router.get("/trend", authMiddleware, requireUser, cache10s, getCollectionTrend);
 router.get("/income", authMiddleware, requireUser, cache10s, getIncomeSummary);
+router.get("/today", authMiddleware, requireUser, cache10s, getToday);
 
 export default router;

@@ -74,3 +74,15 @@ export const getIncomeSummary = asyncHandler(async (req, res) => {
     data: result,
   });
 });
+
+export const getToday = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  const result = await dashboardService.getTodaySummary(userId);
+
+  return sendSuccess(res, {
+    statusCode: 200,
+    message: "Today summary fetched",
+    data: result,
+  });
+});

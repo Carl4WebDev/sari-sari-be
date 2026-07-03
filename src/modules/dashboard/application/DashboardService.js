@@ -178,4 +178,42 @@ export default class DashboardService {
       };
     });
   }
+
+  async getTodaySummary(userId) {
+    const rows = await this.dashboardRepo.getTodayTransactions(userId);
+
+    let totalLent = 0;
+    let totalCollected = 0;
+
+    const transactions = rows.map((r) => {
+      const amount = Number(r.total_amount);
+
+      if (r.type === "LOAN") {
+        totalLent += amount;
+      } else {
+        totalCollected += amount;
+      }
+
+      return {
+        transaction_id: r.transaction_id,
+        type: r.type,
+        borrower_id: r.borrower_id,
+        borrower_name: `${r.first_name} ${r.last_name}`,
+        amount,
+        payment_method: r.payment_method || null,
+        items: r.items || [],
+        created_at: r.created_at,
+      };
+    });
+
+    return {
+      summary: {
+        total_lent: totalLent,
+        total_collected: totalCollected,
+        net: totalLent - totalCollected,
+        transaction_count: transactions.length,
+      },
+      transactions,
+    };
+  }
 }

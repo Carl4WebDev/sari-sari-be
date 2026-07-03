@@ -368,4 +368,42 @@ export default class DashboardRepo {
 
     return result.rows;
   }
+
+  async getTodayTransactions(userId) {
+    const result = await db.query(
+      `
+      SELECT
+        t.transaction_id,
+        t.type,
+        t.total_amount,
+        t.created_at,
+        b.borrower_id,
+        b.first_name,
+        b.last_name,
+        pd.payment_method,
+        (
+          SELECT json_agg(
+            json_build_object(
+              'product_name', li.product_name,
+              'quantity', li.quantity,
+              'price', li.price
+            )
+          )
+          FROM loan_items li
+          WHERE li.transaction_id = t.transaction_id
+        ) AS items
+      FROM transactions t
+      INNER JOIN borrowers b ON b.borrower_id = t.borrower_id
+      LEFT JOIN payment_details pd ON pd.transaction_id = t.transaction_id
+      WHERE b.user_id = $1
+        AND b.is_active = true
+        AND (t.voided = false OR t.voided IS NULL)
+        AND t.created_at::date = CURRENT_DATE
+      ORDER BY t.created_at DESC
+      `,
+      [userId],
+    );
+
+    return result.rows;
+  }
 }
