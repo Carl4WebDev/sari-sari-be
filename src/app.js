@@ -25,6 +25,7 @@ import collectionReminderRoutes from "./modules/collection_reminder/interface/co
 import pushRoutes from "./modules/push/interface/pushRoutes.js";
 import smsRoutes from "./modules/sms/interface/smsRoutes.js";
 import expenseRoutes from "./modules/expenses/interface/expenseRoutes.js";
+import subscriptionRoutes from "./modules/subscriptions/interface/subscriptionRoutes.js";
 
 dotenv.config();
 
@@ -85,6 +86,7 @@ app.use("/api/collection-reminders", collectionReminderRoutes);
 app.use("/api/push", pushRoutes);
 app.use("/api/sms", smsRoutes);
 app.use("/api/expenses", expenseRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 
 // 404 for undefined routes — must come after all route mounts
 app.use(notFoundHandler);

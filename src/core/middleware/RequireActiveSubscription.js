@@ -6,11 +6,12 @@ export default async function requireActiveSubscription(req, res, next) {
 
     const result = await db.query(
       `
-      SELECT subscription_id
-      FROM user_subscription
+      SELECT subscription_id, plan, end_date
+      FROM subscriptions
       WHERE user_id = $1
         AND status = 'active'
         AND end_date >= NOW()
+      ORDER BY end_date DESC
       LIMIT 1
       `,
       [userId],
@@ -18,16 +19,18 @@ export default async function requireActiveSubscription(req, res, next) {
 
     if (!result.rows.length) {
       return res.status(403).json({
+        status: "error",
         error: "Active subscription required",
+        message: "An active subscription is required to access this feature.",
       });
     }
 
-    // Optional: attach subscription info if needed later
+    req.subscription = result.rows[0];
     req.subscriptionId = result.rows[0].subscription_id;
 
     next();
   } catch (err) {
     console.error("Subscription middleware error:", err);
-    res.status(500).json({ error: "Subscription check failed" });
+    res.status(500).json({ status: "error", error: "Subscription check failed" });
   }
 }
