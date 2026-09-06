@@ -10,7 +10,7 @@ export default async function requireActiveSubscription(req, res, next) {
       FROM subscriptions
       WHERE user_id = $1
         AND status = 'active'
-        AND end_date >= NOW()
+        AND end_date >= (NOW() AT TIME ZONE 'Asia/Manila')::date
       ORDER BY end_date DESC
       LIMIT 1
       `,

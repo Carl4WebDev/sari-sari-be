@@ -115,7 +115,7 @@ export default class AuthService {
       );
     }
 
-    const token = this.tokenService.generateToken({
+    const token = user.is_admin ? await this.userRepository.createAdminSession(user.user_id) : this.tokenService.generateToken({
       userId: user.user_id,
       email: user.email,
       role: "USER",
@@ -127,6 +127,8 @@ export default class AuthService {
         user_id: user.user_id,
         email: user.email,
         store_name: user.store_name,
+        is_admin: user.is_admin,
+        role: user.is_admin ? 'ADMIN' : 'USER',
       },
     };
   }

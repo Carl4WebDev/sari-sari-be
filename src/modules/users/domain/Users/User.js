@@ -1,5 +1,6 @@
 export default class User {
-  constructor({ user_id, email, password_hash, store_name }) {
+  constructor({ user_id, email, password_hash, store_name, is_admin = false }) {
+    this.is_admin = is_admin;
     this.user_id = user_id;
     this.email = email;
     this.password_hash = password_hash;

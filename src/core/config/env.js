@@ -35,8 +35,8 @@ if (env.isProduction && !env.databaseUrl) {
 }
 
 if (!env.isProduction) {
-  if (!env.db.user || !env.db.host || !env.db.name) {
-    console.error("❌ FATAL: Missing database environment variables");
+  if (!env.databaseUrl && (!env.db.user || !env.db.host || !env.db.name)) {
+    console.error("❌ FATAL: Missing database environment variables (either DATABASE_URL or DB_USER, DB_HOST, DB_NAME required)");
     process.exit(1);
   }
 }

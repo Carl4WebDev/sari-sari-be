@@ -8,6 +8,8 @@ import rateLimit from "express-rate-limit";
 import authMiddleware from "./core/middleware/Auth.js";
 
 import userRoutes from "./modules/users/interface/userRoutes.js";
+import subscriptionRoutes from "./modules/subscriptions/routes.js";
+import adminRoutes from "./modules/admin/routes.js";
 import errorHandler from "./core/middleware/errorHandler.js";
 import notFoundHandler from "./core/middleware/notFoundHandler.js";
 import healthRoute from "./core/http/healthRoutes.js";
@@ -35,8 +37,14 @@ export default app;
 
 // 🔥 CORS goes here
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : [];
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "http://localhost:5000",
+      "http://127.0.0.1:5173",
+      "http://127.0.0.1:3000",
+    ];
 
 app.use(
   cors({
@@ -76,6 +84,8 @@ app.use("/uploads", authMiddleware, express.static("uploads"));
 
 app.use(healthRoute);
 app.use("/api/users", userRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/borrowers", borrowerRoutes);
 app.use("/api/loans", loanRoutes);
 app.use("/api/payments", paymentRoutes);

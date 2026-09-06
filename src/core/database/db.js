@@ -14,13 +14,17 @@ const poolConfig = {
 };
 
 if (process.env.DATABASE_URL) {
+  const needsSsl =
+    process.env.NODE_ENV === "production" ||
+    process.env.DATABASE_SSL === "true" ||
+    process.env.DATABASE_URL.includes("neon.tech") ||
+    process.env.DATABASE_URL.includes("supabase.co") ||
+    process.env.DATABASE_URL.includes("sslmode=require");
+
   pool = new Pool({
     ...poolConfig,
     connectionString: process.env.DATABASE_URL,
-    ssl:
-      process.env.NODE_ENV === "production"
-        ? { rejectUnauthorized: false }
-        : false,
+    ssl: needsSsl ? { rejectUnauthorized: false } : false,
   });
 } else {
   pool = new Pool({
