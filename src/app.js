@@ -8,7 +8,6 @@ import rateLimit from "express-rate-limit";
 import authMiddleware from "./core/middleware/Auth.js";
 
 import userRoutes from "./modules/users/interface/userRoutes.js";
-import subscriptionRoutes from "./modules/subscriptions/routes.js";
 import adminRoutes from "./modules/admin/routes.js";
 import errorHandler from "./core/middleware/errorHandler.js";
 import notFoundHandler from "./core/middleware/notFoundHandler.js";
@@ -96,7 +95,6 @@ app.use("/api/collection-reminders", collectionReminderRoutes);
 app.use("/api/push", pushRoutes);
 app.use("/api/sms", smsRoutes);
 app.use("/api/expenses", expenseRoutes);
-app.use("/api/subscriptions", subscriptionRoutes);
 
 // 404 for undefined routes — must come after all route mounts
 app.use(notFoundHandler);
