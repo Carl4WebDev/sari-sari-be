@@ -67,4 +67,18 @@ export default class UserRepo extends IUserRepo {
 
     return new User(result.rows[0]);
   }
+
+  async updateLastSeen(userId) {
+    await db.query(
+      `UPDATE users SET last_seen = now() WHERE user_id = $1`,
+      [userId],
+    );
+  }
+
+  async logActivity(userId, action, detail = '') {
+    await db.query(
+      `INSERT INTO activity_log (user_id, action, detail) VALUES ($1, $2, $3)`,
+      [userId, action, detail],
+    ).catch(() => {}); // non-blocking
+  }
 }

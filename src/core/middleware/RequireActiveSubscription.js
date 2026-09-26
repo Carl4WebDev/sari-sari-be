@@ -7,7 +7,7 @@ export default async function requireActiveSubscription(req, res, next) {
     const result = await db.query(
       `
       SELECT subscription_id, plan, end_date
-      FROM subscriptions
+      FROM user_subscription
       WHERE user_id = $1
         AND status = 'active'
         AND end_date >= (NOW() AT TIME ZONE 'Asia/Manila')::date

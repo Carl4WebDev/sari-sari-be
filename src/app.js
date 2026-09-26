@@ -26,7 +26,7 @@ import collectionReminderRoutes from "./modules/collection_reminder/interface/co
 import pushRoutes from "./modules/push/interface/pushRoutes.js";
 import smsRoutes from "./modules/sms/interface/smsRoutes.js";
 import expenseRoutes from "./modules/expenses/interface/expenseRoutes.js";
-import subscriptionRoutes from "./modules/subscriptions/interface/subscriptionRoutes.js";
+import subscriptionRoutes from "./modules/subscriptions/routes.js";
 
 dotenv.config();
 
@@ -78,8 +78,18 @@ const globalLimiter = rateLimit({
 app.use(globalLimiter);
 
 // Profile images are public (for borrower status pages); other uploads require auth
-app.use("/uploads/borrowers", express.static("uploads/borrowers"));
-app.use("/uploads", authMiddleware, express.static("uploads"));
+// Security headers for uploads: prevent MIME sniffing, allow cross-origin, no caching
+const uploadSecurityHeaders = (req, res, next) => {
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  next();
+};
+
+app.use("/uploads/borrowers", uploadSecurityHeaders, express.static("uploads/borrowers"));
+app.use("/uploads", authMiddleware, uploadSecurityHeaders, express.static("uploads"));
 
 app.use(healthRoute);
 app.use("/api/users", userRoutes);

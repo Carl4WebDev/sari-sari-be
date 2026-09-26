@@ -1,6 +1,9 @@
+import fs from "fs";
 import AppError from "../../../../core/errors/AppError.js";
 import { sendSuccess } from "../../../../core/http/apiResponse.js";
 import { asyncHandler } from "../../../../core/middleware/asyncHandler.js";
+import { verifyFileSignature } from "../../../../core/middleware/uploadMiddleware.js";
+import db from "../../../../core/database/db.js";
 
 import BorrowerRepo from "../../infrastructure/BorrowerRepo.js";
 import BorrowerService from "../../application/BorrowerService.js";
@@ -78,13 +81,37 @@ export const uploadBorrowerProfileImage = asyncHandler(async (req, res) => {
     throw new AppError("Profile image is required", 400);
   }
 
+  // Verify file magic bytes match the claimed extension
+  if (!verifyFileSignature(req.file.path)) {
+    fs.unlinkSync(req.file.path);
+    throw new AppError("Invalid image file — file content does not match extension", 400);
+  }
+
   const imageUrl = `/uploads/borrowers/${req.file.filename}`;
+
+  // Get old image path before updating (for cleanup)
+  const oldResult = await db.query(
+    "SELECT profile_image_url FROM borrowers WHERE borrower_id = $1 AND user_id = $2",
+    [borrowerId, userId],
+  );
+  const oldImagePath = oldResult.rows[0]?.profile_image_url?.replace(/^\//, "");
 
   const borrower = await borrowerService.uploadBorrowerProfileImage(
     borrowerId,
     userId,
     imageUrl,
   );
+
+  // Delete old image file (non-critical)
+  if (oldImagePath && oldImagePath !== imageUrl.replace(/^\//, "")) {
+    try {
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+    } catch {
+      // Old file cleanup failed — not critical
+    }
+  }
 
   return sendSuccess(res, {
     statusCode: 200,

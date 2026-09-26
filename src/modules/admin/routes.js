@@ -68,4 +68,61 @@ router.post('/customers/:id/restore',async(req,res) => {
   if(!result.rows.length) return res.status(404).json({message:'Deleted customer not found.'});
   res.json({data:{restored:true}});
 });
+
+// Pilot monitoring — activity overview for all customers
+router.get('/activity',async(req,res) => {
+  const limit = Math.min(Number(req.query.limit) || 50, 200);
+  const result = await db.query(`
+    SELECT
+      u.user_id,
+      u.store_name,
+      u.email,
+      u.created_at,
+      u.last_seen,
+      s.plan,
+      s.status AS subscription_status,
+      s.end_date,
+      CASE
+        WHEN u.last_seen IS NULL THEN 'Never logged in'
+        WHEN u.last_seen > now() - interval '5 minutes' THEN 'Online now'
+        WHEN u.last_seen > now() - interval '1 hour' THEN 'Active recently'
+        WHEN u.last_seen > now() - interval '24 hours' THEN 'Active today'
+        WHEN u.last_seen > now() - interval '7 days' THEN 'This week'
+        ELSE 'Inactive'
+      END AS activity_status
+    FROM users u
+    LEFT JOIN user_subscription s ON s.user_id = u.user_id
+    WHERE NOT u.is_admin AND u.deleted_at IS NULL
+    ORDER BY u.last_seen DESC NULLS LAST
+  `);
+
+  const recentActivity = await db.query(`
+    SELECT a.log_id, a.user_id, a.action, a.detail, a.created_at,
+           u.store_name
+    FROM activity_log a
+    JOIN users u ON u.user_id = a.user_id
+    ORDER BY a.created_at DESC
+    LIMIT $1
+  `, [limit]);
+
+  const stats = await db.query(`
+    SELECT
+      COUNT(*) FILTER (WHERE last_seen > now() - interval '5 minutes') AS online_now,
+      COUNT(*) FILTER (WHERE last_seen > now() - interval '24 hours') AS active_today,
+      COUNT(*) FILTER (WHERE last_seen > now() - interval '7 days') AS active_this_week,
+      COUNT(*) FILTER (WHERE last_seen IS NULL OR last_seen < now() - interval '7 days') AS inactive,
+      COUNT(*) AS total_customers
+    FROM users
+    WHERE NOT is_admin AND deleted_at IS NULL
+  `);
+
+  res.json({
+    data: {
+      customers: result.rows,
+      recent_activity: recentActivity.rows,
+      stats: stats.rows[0],
+    },
+  });
+});
+
 export default router;

@@ -27,5 +27,11 @@ export default async function authMiddleware(req, res, next) {
     email: decoded.email,
   };
 
+  // Update last_seen (throttled: only if last update was >5 min ago, non-blocking)
+  db.query(
+    `UPDATE users SET last_seen = now() WHERE user_id = $1 AND (last_seen IS NULL OR last_seen < now() - interval '5 minutes')`,
+    [req.user.id],
+  ).catch(() => {});
+
   next();
 }

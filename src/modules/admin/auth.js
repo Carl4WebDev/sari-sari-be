@@ -12,5 +12,7 @@ export default async function adminAuth(req, res, next) {
   req.admin = result.rows[0];
   req.adminTokenHash = hashToken(token);
   req.user = {id:req.admin.user_id,role:'ADMIN',email:req.admin.email};
+  // Track admin last_seen (throttled, non-blocking)
+  db.query(`UPDATE users SET last_seen = now() WHERE user_id = $1 AND (last_seen IS NULL OR last_seen < now() - interval '5 minutes')`,[req.admin.user_id]).catch(()=>{});
   next();
 }

@@ -121,6 +121,9 @@ export default class AuthService {
       role: "USER",
     });
 
+    // Track last_seen on login (non-blocking)
+    this.userRepository.updateLastSeen(user.user_id).catch(() => {});
+
     return {
       token,
       user: {
