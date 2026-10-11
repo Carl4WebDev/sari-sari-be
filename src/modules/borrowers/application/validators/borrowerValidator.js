@@ -26,9 +26,9 @@ export const validateBorrowerInput = (data) => {
   const errors = {};
 
   const borrower = {
-    first_name: sanitizeString(data.first_name),
-    middle_name: sanitizeString(data.middle_name) || null,
-    last_name: sanitizeString(data.last_name),
+    first_name: sanitizeString(data.first_name).toUpperCase(),
+    middle_name: sanitizeString(data.middle_name).toUpperCase() || null,
+    last_name: sanitizeString(data.last_name).toUpperCase(),
     dob: data.dob || null,
     contact_number: sanitizeString(data.contact_number) || null,
     email: sanitizeString(data.email) || null,
